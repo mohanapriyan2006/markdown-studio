@@ -66,6 +66,21 @@ function cleanColor(color: string | undefined): string | undefined {
   return undefined
 }
 
+function wrapLine(line: string, maxLen: number): string[] {
+  if (line.length <= maxLen) return [line]
+  const chunks: string[] = []
+  let start = 0
+  while (start < line.length) {
+    chunks.push(line.slice(start, start + maxLen))
+    start += maxLen
+  }
+  return chunks
+}
+
+function wrapCodeBlock(lines: string[], maxLen = 100): string {
+  return lines.flatMap((line) => wrapLine(line, maxLen)).join('\n')
+}
+
 /* ── Simple markdown-to-DOCX converter ───────────────────────── */
 function parseMarkdownToDocx(markdown: string, customCss = '') {
   const aProps = extractCssProps(customCss, 'a')
@@ -178,8 +193,9 @@ function parseMarkdownToDocx(markdown: string, customCss = '') {
         i++
       }
       if (codeLines.length) {
+        const codeText = wrapCodeBlock(codeLines)
         children.push(new Paragraph({
-          children: [new TextRun({ text: codeLines.join('\n'), font: 'Courier New', size: 20, color: codeColor })],
+          children: [new TextRun({ text: codeText, font: 'Courier New', size: 20, color: codeColor })],
           shading: { fill: codeBg },
           spacing: { after: 200, before: 200 },
           indent: { left: 360, right: 360 },
