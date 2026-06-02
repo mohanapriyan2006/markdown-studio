@@ -9,6 +9,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { exportMarkdown } from './features/export/exportMarkdown'
 import { exportPdf } from './features/export/exportPdf'
 import { exportDocx } from './features/export/exportDocx'
+import { Analytics } from "@vercel/analytics/next"
 
 export default function App() {
   useTheme()
@@ -130,6 +131,8 @@ export default function App() {
           </div>
         </main>
       )}
+
+      <Analytics />
     </div>
   )
 }
