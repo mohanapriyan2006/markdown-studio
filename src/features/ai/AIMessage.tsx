@@ -26,9 +26,38 @@ function CopyButton({ text }: { text: string }) {
   )
 }
 
+function codeChildrenToText(children: React.ReactNode): string {
+  if (Array.isArray(children)) {
+    return children.map((child) => String(child)).join('')
+  }
+  return String(children ?? '')
+}
+
+const markdownComponents = {
+  code({ inline, className, children }: { inline?: boolean; className?: string; children?: React.ReactNode }) {
+    const codeText = codeChildrenToText(children).replace(/\n$/, '')
+    if (inline) {
+      return <code className={className}>{children}</code>
+    }
+
+    const language = className?.replace('language-', '') || 'code'
+    return (
+      <div className="ai-codeblock">
+        <div className="ai-codeblock-header">
+          <span className="ai-codeblock-lang">{language}</span>
+          <CopyButton text={codeText} />
+        </div>
+        <pre>
+          <code className={className}>{children}</code>
+        </pre>
+      </div>
+    )
+  },
+}
+
 function MarkdownOutputCard({ code }: { code: string }) {
   const { setMarkdown, markdown, setActiveTab, markSaved } = useEditorStore()
-  const [preview, setPreview] = useState(false)
+  const [preview, setPreview] = useState(() => code.includes('```') || code.length < 1200)
 
   const handleReplace = () => {
     setMarkdown(code)
@@ -59,7 +88,13 @@ function MarkdownOutputCard({ code }: { code: string }) {
 
       {preview && (
         <div className="ai-output-preview markdown-body">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{code}</ReactMarkdown>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeHighlight]}
+            components={markdownComponents}
+          >
+            {code}
+          </ReactMarkdown>
         </div>
       )}
 
@@ -249,7 +284,13 @@ export function AIMessage({ message }: AIMessageProps) {
         <div className="ai-msg-avatar"><Sparkles size={14} /></div>
         <div className="ai-msg-body">
           <div className="ai-msg-text">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{message.content}</ReactMarkdown>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeHighlight]}
+              components={markdownComponents}
+            >
+              {message.content}
+            </ReactMarkdown>
           </div>
         </div>
       </div>

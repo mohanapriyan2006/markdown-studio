@@ -35,7 +35,15 @@ export async function exportPdf(
   const baseStyle = document.createElement('style')
   baseStyle.textContent = scopeCss(BASE_MARKDOWN_STYLES, `.${scopeClass}`) + `
     .${scopeClass} .markdown-body { max-width: none !important; padding: 0 !important; }
-    .${scopeClass} pre { overflow: hidden !important; }
+    .${scopeClass} pre {
+      overflow: visible !important;
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+    }
+    .${scopeClass} pre code {
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+    }
     .${scopeClass} img { max-width: 100%; border-radius: 8px; }
   `
   clone.appendChild(baseStyle)

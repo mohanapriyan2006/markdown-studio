@@ -21,20 +21,80 @@ function isModelUnavailableError(error: unknown): boolean {
 
 // ─── Output Parser ──────────────────────────────────────────────────────────
 
-export function parseAIResponse(content: string): ParsedOutput {
-  // Match ```markdown or ```md blocks (case-insensitive, handles optional space)
-  const mdMatch = content.match(/```(?:markdown|md)\s*\n?([\s\S]*?)```/i)
-  // Match ```css blocks (case-insensitive, handles optional space)
-  const cssMatch = content.match(/```css\s*\n?([\s\S]*?)```/i)
+type ParsedBlock = {
+  lang: 'markdown' | 'md' | 'css'
+  start: number
+  contentStart: number
+  end: number
+  content: string
+}
 
-  if (mdMatch && cssMatch) {
-    return { type: 'mixed', markdownCode: mdMatch[1].trim(), cssCode: cssMatch[1].trim(), rawText: content }
+function parseFencedBlocks(content: string): ParsedBlock[] {
+  const openRegex = /(^|\n)```(markdown|md|css)\s*\n?/gi
+  const closeRegex = /(^|\n)```[ \t]*(?=\n|$)/g
+
+  const openings: Array<Omit<ParsedBlock, 'end' | 'content'>> = []
+  for (const match of content.matchAll(openRegex)) {
+    const prefixLength = match[1]?.length ?? 0
+    const start = match.index! + prefixLength
+    const contentStart = match.index! + match[0].length
+    openings.push({
+      lang: match[2].toLowerCase() as ParsedBlock['lang'],
+      start,
+      contentStart,
+    })
   }
-  if (mdMatch) {
-    return { type: 'markdown', markdownCode: mdMatch[1].trim(), rawText: content }
+
+  if (openings.length === 0) return []
+
+  const closings: number[] = []
+  for (const match of content.matchAll(closeRegex)) {
+    const prefixLength = match[1]?.length ?? 0
+    closings.push(match.index! + prefixLength)
   }
-  if (cssMatch) {
-    return { type: 'css', cssCode: cssMatch[1].trim(), rawText: content }
+
+  const sortedOpenings = openings.sort((a, b) => a.start - b.start)
+  const blocks: ParsedBlock[] = []
+
+  for (let i = 0; i < sortedOpenings.length; i += 1) {
+    const opening = sortedOpenings[i]
+    const nextOpeningStart = sortedOpenings[i + 1]?.start ?? content.length
+    const candidateClosings = closings.filter(
+      (pos) => pos > opening.contentStart && pos < nextOpeningStart
+    )
+
+    const end = candidateClosings.length > 0
+      ? candidateClosings[candidateClosings.length - 1]
+      : -1
+
+    if (end === -1) continue
+
+    blocks.push({
+      ...opening,
+      end,
+      content: content.slice(opening.contentStart, end).trim(),
+    })
+  }
+
+  return blocks
+}
+
+export function parseAIResponse(content: string): ParsedOutput {
+  const blocks = parseFencedBlocks(content)
+  const markdownBlocks = blocks.filter((block) => block.lang === 'markdown' || block.lang === 'md')
+  const cssBlocks = blocks.filter((block) => block.lang === 'css')
+
+  const markdownCode = markdownBlocks.map((block) => block.content).join('\n\n').trim()
+  const cssCode = cssBlocks.map((block) => block.content).join('\n\n').trim()
+
+  if (markdownCode && cssCode) {
+    return { type: 'mixed', markdownCode, cssCode, rawText: content }
+  }
+  if (markdownCode) {
+    return { type: 'markdown', markdownCode, rawText: content }
+  }
+  if (cssCode) {
+    return { type: 'css', cssCode, rawText: content }
   }
   return { type: 'text', rawText: content }
 }

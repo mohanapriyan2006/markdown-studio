@@ -338,6 +338,7 @@ body {
   flex: 1;
   display: flex;
   overflow: hidden;
+  min-height: 0;
 }
 
 .panel {
@@ -346,6 +347,7 @@ body {
   overflow: hidden;
   flex: 1;
   min-width: 0;
+  min-height: 0;
 }
 
 .panel-left {
@@ -806,7 +808,9 @@ body {
   .panel-left {
     border-right: none;
     border-bottom: 1px solid var(--border);
-    height: 50%;
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 0;
   }
   .resizer {
     display: none;
@@ -1211,6 +1215,7 @@ body {
   flex: 1;
   overflow: hidden;
   background: var(--bg-base);
+  min-height: 0;
 }
 
 .ai-chat-topbar {
@@ -1279,6 +1284,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-height: 0;
 }
 
 @keyframes msgIn {
@@ -1409,6 +1415,42 @@ body {
 .ai-msg-text blockquote { border-left: 2px solid var(--accent); padding: 6px 12px; margin: 0.6em 0; background: var(--bg-muted); border-radius: 0 6px 6px 0; }
 .ai-msg-text pre { background: var(--bg-muted); padding: 10px 12px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); margin: 0.5em 0; }
 .ai-msg-text pre code { background: none; border: none; padding: 0; color: var(--text-primary); font-size: 0.85em; }
+.ai-codeblock {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-muted);
+  overflow: hidden;
+  margin: 0.6em 0;
+}
+.ai-codeblock-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.ai-codeblock-lang {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.ai-codeblock pre {
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  background: transparent;
+}
+.ai-codeblock pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-primary);
+  font-size: 0.85em;
+  display: block;
+}
 .ai-msg-text table { width: 100%; border-collapse: collapse; margin: 0.5em 0; font-size: 0.9em; }
 .ai-msg-text th { background: var(--bg-muted); font-weight: 600; text-align: left; padding: 6px 10px; border: 1px solid var(--border); color: var(--text-primary); }
 .ai-msg-text td { padding: 6px 10px; border: 1px solid var(--border); color: var(--text-secondary); }
