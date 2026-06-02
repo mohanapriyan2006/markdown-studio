@@ -1,14 +1,26 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { Send, Trash2, Settings2, ChevronRight } from 'lucide-react'
+import { Send, Trash2, Settings2, ChevronRight, Sparkles } from 'lucide-react'
+import {
+  FileText, Palette, Zap, AlignLeft, Wrench, LayoutTemplate, RefreshCw, Lightbulb,
+} from 'lucide-react'
 import { useAIStore } from '../../stores/aiStore'
 import { useEditorStore } from '../../stores/editorStore'
 import { AIMessage } from './AIMessage'
-import { sendAIMessage, parseAIResponse } from '../../services/ai/aiService'
+import { sendAIMessage, sendDemoAIMessage, parseAIResponse } from '../../services/ai/aiService'
 import { QUICK_ACTIONS } from '../../types/ai'
 import type { ChatMessage } from '../../types/ai'
 
 function nanoid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36)
+}
+
+const ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
+  FileText, Palette, Zap, AlignLeft, Wrench, LayoutTemplate, RefreshCw, Lightbulb,
+}
+
+function QuickActionIcon({ name }: { name: string }) {
+  const Icon = ICON_MAP[name]
+  return Icon ? <Icon size={13} /> : <Sparkles size={13} />
 }
 
 export function AIChatPanel() {
@@ -21,6 +33,7 @@ export function AIChatPanel() {
 
   const { markdown, customCss } = useEditorStore()
   const [input, setInput] = useState('')
+  const [demoModel, setDemoModel] = useState('gemini-flash-latest')
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -64,13 +77,16 @@ export function AIChatPanel() {
         const activeConfig = demoMode
           ? { ...config, provider: 'gemini' as const, model: 'gemini-flash-latest', endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', apiKey: (import.meta.env.VITE_API_KEY as string) || '' }
           : config
-        const responseText = await sendAIMessage(
-          activeConfig,
-          messages,
-          userText.trim(),
-          markdown,
-          customCss
-        )
+
+        let responseText: string
+        if (demoMode) {
+          const result = await sendDemoAIMessage(activeConfig, messages, userText.trim(), markdown, customCss)
+          responseText = result.text
+          setDemoModel(result.modelUsed)
+        } else {
+          responseText = await sendAIMessage(activeConfig, messages, userText.trim(), markdown, customCss)
+        }
+
         const parsed = parseAIResponse(responseText)
         updateLastMessage({
           content: responseText,
@@ -117,7 +133,7 @@ export function AIChatPanel() {
         <div className="ai-chat-status">
           <span className={`ai-status-dot ${isConnected ? 'ai-status-connected' : 'ai-status-idle'}`} />
           <span className="ai-status-label">
-            {demoMode ? 'gemini-flash-latest (demo)' : isConnected ? `${config.model || 'AI'}` : 'Not configured'}
+            {demoMode ? `${demoModel} (demo)` : isConnected ? `${config.model || 'AI'}` : 'Not configured'}
           </span>
         </div>
         <div style={{ display: 'flex', gap: 4 }}>
@@ -144,7 +160,7 @@ export function AIChatPanel() {
       <div className="ai-messages-list">
         {messages.length === 0 && (
           <div className="ai-empty-chat">
-            <div className="ai-empty-icon">✦</div>
+            <div className="ai-empty-icon"><Sparkles size={28} /></div>
             <p className="ai-empty-title">AI Copilot</p>
             <p className="ai-empty-sub">Ask anything about your document, generate content, or pick a quick action below.</p>
           </div>
@@ -166,7 +182,7 @@ export function AIChatPanel() {
               disabled={isGenerating}
               title={action.userPrompt}
             >
-              <span>{action.emoji}</span>
+              <QuickActionIcon name={action.icon} />
               {action.label}
             </button>
           ))}

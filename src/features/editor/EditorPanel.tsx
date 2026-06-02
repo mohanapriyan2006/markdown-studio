@@ -5,7 +5,7 @@ import { css } from '@codemirror/lang-css'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { EditorView } from '@codemirror/view'
 import { languages } from '@codemirror/language-data'
-import { FileText, Palette, RotateCcw, Type } from 'lucide-react'
+import { FileText, Palette, RotateCcw, Type, Sparkles } from 'lucide-react'
 import { useEditorStore } from '../../stores/editorStore'
 import { countWords, countChars } from '../../lib/utils'
 import { AICopilot } from '../ai/AICopilot'
@@ -103,14 +103,14 @@ export function EditorPanel() {
             Custom CSS
           </button>
 
-          {/* ✦ AI Copilot Tab — animated */}
+          {/* AI Copilot Tab */}
           <button
             className={`tab tab-ai ${activeTab === 'ai' ? 'active' : ''}`}
             onClick={() => setActiveTab('ai')}
             id="tab-ai"
             aria-selected={activeTab === 'ai'}
           >
-            <span className="tab-ai-sparkle">✦</span>
+            <Sparkles size={13} />
             <span className="tab-ai-label">AI Copilot</span>
             {activeTab === 'ai' && <span className="tab-ai-pip" />}
           </button>

@@ -1,5 +1,24 @@
 import type { AIConfig, ChatMessage, ParsedOutput } from '../../types/ai'
 
+// ─── Demo Fallback Models ───────────────────────────────────────────────────
+// Only used when demoMode is active. Tried in order if the previous model fails.
+const DEMO_FALLBACK_MODELS = [
+  'gemini-flash-latest',
+  'gemini-3.5-flash',
+  'gemini-2.5-flash',
+  'gemini-3.1-flash-lite',
+  'gemini-2.5-flash-lite',
+  'gemini-3-flash-preview',
+  'gemini-2.5-pro',
+  'gemini-3.1-pro-preview',
+]
+
+function isModelUnavailableError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  const msg = error.message.toLowerCase()
+  return msg.includes('404') || msg.includes('not found') || msg.includes('model') || msg.includes('unavailable') || msg.includes('does not exist') || msg.includes('invalid')
+}
+
 // ─── Output Parser ──────────────────────────────────────────────────────────
 
 export function parseAIResponse(content: string): ParsedOutput {
@@ -135,6 +154,43 @@ export async function sendAIMessage(
     return callAnthropic(config, messages)
   }
   return callOpenAICompat(config, messages)
+}
+
+export async function sendDemoAIMessage(
+  baseConfig: AIConfig,
+  chatHistory: ChatMessage[],
+  userPrompt: string,
+  markdown: string,
+  css: string
+): Promise<{ text: string; modelUsed: string }> {
+  const systemPrompt = buildSystemPrompt(markdown, css)
+  const messages: OpenAIMessage[] = [
+    { role: 'system', content: systemPrompt },
+    ...chatHistory.slice(-8).map((m) => ({
+      role: m.role as 'user' | 'assistant',
+      content: m.content,
+    })),
+    { role: 'user', content: userPrompt },
+  ]
+
+  let lastError: Error | undefined
+
+  for (const model of DEMO_FALLBACK_MODELS) {
+    const config = { ...baseConfig, model }
+    try {
+      const text = config.provider === 'anthropic'
+        ? await callAnthropic(config, messages)
+        : await callOpenAICompat(config, messages)
+      return { text, modelUsed: model }
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err))
+      if (!isModelUnavailableError(lastError)) {
+        throw lastError
+      }
+    }
+  }
+
+  throw lastError ?? new Error('All demo fallback models are unavailable.')
 }
 
 export async function testAIConnection(config: AIConfig): Promise<void> {

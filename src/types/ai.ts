@@ -80,7 +80,7 @@ export type ConnectionStatus = 'idle' | 'testing' | 'success' | 'error'
 export interface QuickAction {
   id: string
   label: string
-  emoji: string
+  icon: string
   systemHint: string
   userPrompt: string
 }
@@ -89,56 +89,56 @@ export const QUICK_ACTIONS: QuickAction[] = [
   {
     id: 'gen-md',
     label: 'Generate Markdown',
-    emoji: '✍️',
+    icon: 'FileText',
     systemHint: 'Generate clean, well-structured Markdown content. Wrap output in ```markdown blocks.',
     userPrompt: 'Generate well-structured Markdown based on my current document context: ',
   },
   {
     id: 'gen-css',
     label: 'Generate CSS',
-    emoji: '🎨',
+    icon: 'Palette',
     systemHint: 'Generate beautiful CSS styles for the markdown preview. Wrap output in ```css blocks.',
     userPrompt: 'Generate beautiful custom CSS styles for my markdown document: ',
   },
   {
     id: 'improve',
     label: 'Improve Document',
-    emoji: '⚡',
+    icon: 'Zap',
     systemHint: 'Improve the document structure, clarity, and formatting. Return improved version in ```markdown blocks.',
     userPrompt: 'Improve my current markdown document — better structure, clarity, and formatting.',
   },
   {
     id: 'summarize',
     label: 'Summarize',
-    emoji: '📝',
+    icon: 'AlignLeft',
     systemHint: 'Write a concise summary of the document. Return summary in ```markdown blocks.',
     userPrompt: 'Write a concise TL;DR summary of my current document.',
   },
   {
     id: 'fix',
     label: 'Fix Markdown',
-    emoji: '🔧',
+    icon: 'Wrench',
     systemHint: 'Fix any Markdown syntax errors and improve formatting. Return fixed version in ```markdown blocks.',
     userPrompt: 'Fix any Markdown syntax issues and improve the formatting of my document.',
   },
   {
     id: 'template',
     label: 'Create Template',
-    emoji: '📋',
+    icon: 'LayoutTemplate',
     systemHint: 'Create a reusable Markdown template based on the document type. Wrap in ```markdown blocks.',
     userPrompt: 'Create a reusable Markdown template for: ',
   },
   {
     id: 'style',
     label: 'Convert Style',
-    emoji: '🔄',
+    icon: 'RefreshCw',
     systemHint: 'Convert the document style (e.g., technical → casual, formal → friendly). Return in ```markdown blocks.',
     userPrompt: 'Convert my document to a different style: ',
   },
   {
     id: 'explain',
     label: 'Explain Document',
-    emoji: '💡',
+    icon: 'Lightbulb',
     systemHint: 'Explain the document structure, key points, and purpose in plain language.',
     userPrompt: 'Explain what this document covers and its key points.',
   },

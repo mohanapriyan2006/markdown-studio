@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
-import { Copy, Check, FileText, Palette, ChevronDown, ChevronUp, Replace, Plus } from 'lucide-react'
+import { Copy, Check, FileText, Palette, ChevronDown, ChevronUp, Replace, Plus, Sparkles } from 'lucide-react'
 import type { ChatMessage } from '../../types/ai'
 import { useEditorStore } from '../../stores/editorStore'
 
@@ -166,7 +166,7 @@ export function AIMessage({ message }: AIMessageProps) {
   if (message.isLoading) {
     return (
       <div className="ai-msg ai-msg-assistant">
-        <div className="ai-msg-avatar">✦</div>
+        <div className="ai-msg-avatar"><Sparkles size={14} /></div>
         <div className="ai-msg-bubble ai-msg-bubble-assistant">
           <LoadingDots />
         </div>
@@ -177,7 +177,7 @@ export function AIMessage({ message }: AIMessageProps) {
   if (message.error) {
     return (
       <div className="ai-msg ai-msg-assistant">
-        <div className="ai-msg-avatar">✦</div>
+        <div className="ai-msg-avatar"><Sparkles size={14} /></div>
         <div className="ai-msg-bubble ai-msg-bubble-error">
           {message.error}
         </div>
@@ -192,7 +192,7 @@ export function AIMessage({ message }: AIMessageProps) {
   if (!hasStructuredOutput) {
     return (
       <div className="ai-msg ai-msg-assistant">
-        <div className="ai-msg-avatar">✦</div>
+        <div className="ai-msg-avatar"><Sparkles size={14} /></div>
         <div className="ai-msg-body">
           <div className="ai-msg-text">
             <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{message.content}</ReactMarkdown>
@@ -209,7 +209,7 @@ export function AIMessage({ message }: AIMessageProps) {
 
   return (
     <div className="ai-msg ai-msg-assistant">
-      <div className="ai-msg-avatar">✦</div>
+      <div className="ai-msg-avatar"><Sparkles size={14} /></div>
       <div className="ai-msg-body">
         {explanationText && (
           <div className="ai-msg-text">
