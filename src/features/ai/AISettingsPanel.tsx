@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import {
   Settings2, Zap, ChevronDown, Eye, EyeOff,
-  CheckCircle2, XCircle, Loader2, Save, RotateCcw, Shield,
+  CheckCircle2, XCircle, Loader2, Save, RotateCcw, Shield, Sparkles,
 } from 'lucide-react'
 import { useAIStore } from '../../stores/aiStore'
 import { PROVIDER_PRESETS } from '../../types/ai'
@@ -16,15 +16,21 @@ export function AISettingsPanel() {
     connectionStatus, connectionError,
     setConnectionStatus, setShowSettings,
     isConfigured, resetConfig,
+    demoMode, setDemoMode,
   } = useAIStore()
 
   const [showKey, setShowKey] = useState(false)
   const [localConfig, setLocalConfig] = useState({ ...config })
+  const [customModel, setCustomModel] = useState(() => {
+    const currentPreset = PROVIDER_PRESETS[config.provider]
+    return config.provider === 'custom' || !currentPreset.models.includes(config.model)
+  })
 
   const preset = PROVIDER_PRESETS[localConfig.provider]
 
   const handleProviderChange = (provider: AIProvider) => {
     const p = PROVIDER_PRESETS[provider]
+    setCustomModel(provider === 'custom')
     setLocalConfig((c) => ({
       ...c,
       provider,
@@ -52,6 +58,10 @@ export function AISettingsPanel() {
     }
   }
 
+  const handleUseDemo = () => {
+    setDemoMode(true)
+  }
+
   return (
     <div className="ai-settings-panel">
       <div className="ai-settings-header">
@@ -71,6 +81,23 @@ export function AISettingsPanel() {
       </div>
 
       <div className="ai-settings-body">
+        {/* Demo AI */}
+        <button
+          className="ai-btn-save"
+          onClick={handleUseDemo}
+          style={{ width: '100%', justifyContent: 'center' }}
+          title="Use demo Gemini key (may be unavailable)"
+        >
+          <Sparkles size={13} />
+          Use Demo AI — Limited
+        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '8px 0' }}>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>or</span>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+        </div>
+
         {/* Provider */}
         <div className="ai-field">
           <label className="ai-label">Provider</label>
@@ -134,27 +161,51 @@ export function AISettingsPanel() {
         {/* Model */}
         <div className="ai-field">
           <label className="ai-label">Model</label>
-          {preset.models.length > 0 && localConfig.provider !== 'custom' ? (
+          {!customModel && preset.models.length > 0 ? (
             <div className="ai-select-wrapper">
               <select
                 className="ai-select"
                 value={localConfig.model}
-                onChange={(e) => setLocalConfig((c) => ({ ...c, model: e.target.value }))}
+                onChange={(e) => {
+                  if (e.target.value === '__custom__') {
+                    setCustomModel(true)
+                    setLocalConfig((c) => ({ ...c, model: '' }))
+                  } else {
+                    setLocalConfig((c) => ({ ...c, model: e.target.value }))
+                  }
+                }}
               >
                 {preset.models.map((m) => (
                   <option key={m} value={m}>{m}</option>
                 ))}
+                <option value="__custom__">Custom (enter manually)</option>
               </select>
               <ChevronDown size={13} className="ai-select-icon" />
             </div>
           ) : (
-            <input
-              className="ai-input"
-              value={localConfig.model}
-              onChange={(e) => setLocalConfig((c) => ({ ...c, model: e.target.value }))}
-              placeholder="model-name"
-              spellCheck={false}
-            />
+            <div className="ai-input-wrapper" style={{ display: 'flex', gap: 8 }}>
+              <input
+                className="ai-input"
+                value={localConfig.model}
+                onChange={(e) => setLocalConfig((c) => ({ ...c, model: e.target.value }))}
+                placeholder="model-name"
+                spellCheck={false}
+                style={{ flex: 1 }}
+              />
+              {preset.models.length > 0 && (
+                <button
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => {
+                    setCustomModel(false)
+                    setLocalConfig((c) => ({ ...c, model: preset.model }))
+                  }}
+                  type="button"
+                  title="Back to preset models"
+                >
+                  Presets
+                </button>
+              )}
+            </div>
           )}
         </div>
 

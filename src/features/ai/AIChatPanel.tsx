@@ -16,6 +16,7 @@ export function AIChatPanel() {
     config, messages, isGenerating,
     addMessage, updateLastMessage, clearMessages,
     setIsGenerating, setShowSettings, connectionStatus,
+    demoMode,
   } = useAIStore()
 
   const { markdown, customCss } = useEditorStore()
@@ -60,8 +61,11 @@ export function AIChatPanel() {
       setInput('')
 
       try {
+        const activeConfig = demoMode
+          ? { ...config, provider: 'gemini' as const, model: 'gemini-flash-latest', endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', apiKey: (import.meta.env.VITE_API_KEY as string) || '' }
+          : config
         const responseText = await sendAIMessage(
-          config,
+          activeConfig,
           messages,
           userText.trim(),
           markdown,
@@ -84,7 +88,7 @@ export function AIChatPanel() {
         setIsGenerating(false)
       }
     },
-    [config, isGenerating, markdown, customCss, messages, addMessage, updateLastMessage, setIsGenerating]
+    [config, isGenerating, markdown, customCss, messages, addMessage, updateLastMessage, setIsGenerating, demoMode]
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -104,7 +108,7 @@ export function AIChatPanel() {
     textareaRef.current?.focus()
   }
 
-  const isConnected = connectionStatus === 'success' || config.apiKey.trim()
+  const isConnected = connectionStatus === 'success' || config.apiKey.trim() || demoMode
 
   return (
     <div className="ai-chat-panel">
@@ -113,7 +117,7 @@ export function AIChatPanel() {
         <div className="ai-chat-status">
           <span className={`ai-status-dot ${isConnected ? 'ai-status-connected' : 'ai-status-idle'}`} />
           <span className="ai-status-label">
-            {isConnected ? `${config.model || 'AI'}` : 'Not configured'}
+            {demoMode ? 'gemini-flash-latest (demo)' : isConnected ? `${config.model || 'AI'}` : 'Not configured'}
           </span>
         </div>
         <div style={{ display: 'flex', gap: 4 }}>

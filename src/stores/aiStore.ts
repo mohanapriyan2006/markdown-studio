@@ -20,6 +20,7 @@ interface AIState {
   messages: ChatMessage[]
   isGenerating: boolean
   showSettings: boolean
+  demoMode: boolean
 
   // Actions
   setConfig: (config: Partial<AIConfig>) => void
@@ -31,6 +32,7 @@ interface AIState {
   setIsGenerating: (v: boolean) => void
   setShowSettings: (v: boolean) => void
   resetConfig: () => void
+  setDemoMode: (v: boolean) => void
 }
 
 export const useAIStore = create<AIState>()(
@@ -43,13 +45,15 @@ export const useAIStore = create<AIState>()(
       messages: [],
       isGenerating: false,
       showSettings: true,
+      demoMode: false,
 
       setConfig: (updates) =>
         set((s) => {
           const newConfig = { ...s.config, ...updates }
           return {
             config: newConfig,
-            isConfigured: !!newConfig.apiKey.trim() && !!newConfig.endpoint.trim(),
+            isConfigured: (!!newConfig.apiKey.trim() && !!newConfig.endpoint.trim()) || s.demoMode,
+            demoMode: newConfig.apiKey.trim() ? false : s.demoMode,
           }
         }),
 
@@ -88,7 +92,10 @@ export const useAIStore = create<AIState>()(
       setShowSettings: (v) => set({ showSettings: v }),
 
       resetConfig: () =>
-        set({ config: DEFAULT_CONFIG, isConfigured: false, connectionStatus: 'idle', connectionError: null }),
+        set({ config: DEFAULT_CONFIG, isConfigured: false, connectionStatus: 'idle', connectionError: null, demoMode: false }),
+
+      setDemoMode: (v) =>
+        set({ demoMode: v, isConfigured: v, showSettings: !v }),
     }),
     {
       name: 'markdown-studio-ai',
