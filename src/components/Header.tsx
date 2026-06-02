@@ -1,31 +1,38 @@
 import React from 'react'
-import { Pencil } from 'lucide-react'
+import { Info } from 'lucide-react'
 import { FileUploader } from './FileUploader'
 import { ExportMenu } from './ExportMenu'
 import { ThemeToggle } from './ThemeToggle'
 import { TemplateSelector } from './TemplateSelector'
 import { useEditorStore } from '../stores/editorStore'
+import logoImg from '../assets/logo.png'
 
 interface HeaderProps {
   onUpload: (content: string) => void
   onExportMarkdown: () => void
   onExportPdf: () => Promise<void>
   onExportDocx: () => Promise<void>
+  onAbout: () => void
 }
 
-export function Header({ onUpload, onExportMarkdown, onExportPdf, onExportDocx }: HeaderProps) {
+export function Header({ onUpload, onExportMarkdown, onExportPdf, onExportDocx, onAbout }: HeaderProps) {
   const { lastSaved } = useEditorStore()
 
   return (
     <header className="header" role="banner">
       {/* Logo */}
       <div className="header-logo">
-        <div className="header-logo-icon">
-          <Pencil size={16} color="white" strokeWidth={2.5} />
-        </div>
+        <img src={logoImg} alt="Markdown Studio" className="header-logo-img" />
         <span className="header-logo-text">
           Markdown <span>Studio</span>
         </span>
+        <button
+          className="header-info-btn"
+          onClick={onAbout}
+          title="About Markdown Studio"
+        >
+          <Info size={14} />
+        </button>
       </div>
 
       {/* Center — saved status */}

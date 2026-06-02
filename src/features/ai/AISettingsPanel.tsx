@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import {
   Settings2, Zap, ChevronDown, Eye, EyeOff,
-  CheckCircle2, XCircle, Loader2, Save, RotateCcw,
+  CheckCircle2, XCircle, Loader2, Save, RotateCcw, Shield,
 } from 'lucide-react'
 import { useAIStore } from '../../stores/aiStore'
 import { PROVIDER_PRESETS } from '../../types/ai'
@@ -112,7 +112,10 @@ export function AISettingsPanel() {
               {showKey ? <EyeOff size={13} /> : <Eye size={13} />}
             </button>
           </div>
-          <span className="ai-hint">Stored locally in your browser only</span>
+          <span className="ai-hint">
+            <Shield size={10} style={{ verticalAlign: 'middle', marginRight: 4 }} />
+            For security, settings are stored locally in your browser only — never on a server.
+          </span>
         </div>
 
         {/* Endpoint */}

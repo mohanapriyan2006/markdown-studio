@@ -2,6 +2,7 @@ import React, { useRef, useState, useCallback, useEffect } from 'react'
 import { Header } from './components/Header'
 import { EditorPanel } from './features/editor/EditorPanel'
 import { PreviewPanel } from './features/preview/PreviewPanel'
+import { AboutPage } from './pages/AboutPage'
 import { useEditorStore } from './stores/editorStore'
 import { useTheme } from './hooks/useTheme'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
@@ -14,6 +15,7 @@ export default function App() {
 
   const { markdown, customCss, setMarkdown } = useEditorStore()
   const previewRef = useRef<HTMLDivElement>(null)
+  const [page, setPage] = useState<'editor' | 'about'>('editor')
 
   // Resizable panel state
   const [leftWidth, setLeftWidth] = useState(50) // percent
@@ -86,42 +88,47 @@ export default function App() {
         onExportMarkdown={handleExportMarkdown}
         onExportPdf={handleExportPdf}
         onExportDocx={handleExportDocx}
+        onAbout={() => setPage('about')}
       />
 
-      <main
-        className="workspace"
-        ref={containerRef}
-        role="main"
-      >
-        {/* Left panel */}
-        <div
-          style={{
-            width: `${leftWidth}%`,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            flexShrink: 0,
-          }}
+      {page === 'about' ? (
+        <AboutPage onBack={() => setPage('editor')} />
+      ) : (
+        <main
+          className="workspace"
+          ref={containerRef}
+          role="main"
         >
-          <EditorPanel />
-        </div>
+          {/* Left panel */}
+          <div
+            style={{
+              width: `${leftWidth}%`,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              flexShrink: 0,
+            }}
+          >
+            <EditorPanel />
+          </div>
 
-        {/* Resizer */}
-        <div
-          ref={resizerRef}
-          className="resizer"
-          onMouseDown={handleMouseDown}
-          role="separator"
-          aria-orientation="vertical"
-          aria-label="Resize panels"
-          title="Drag to resize panels"
-        />
+          {/* Resizer */}
+          <div
+            ref={resizerRef}
+            className="resizer"
+            onMouseDown={handleMouseDown}
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize panels"
+            title="Drag to resize panels"
+          />
 
-        {/* Right panel */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-          <PreviewPanel previewRef={previewRef} />
-        </div>
-      </main>
+          {/* Right panel */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+            <PreviewPanel previewRef={previewRef} />
+          </div>
+        </main>
+      )}
     </div>
   )
 }
