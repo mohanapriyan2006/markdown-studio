@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react'
-import { FileText, Eye } from 'lucide-react'
+import { FileText, Eye, Loader2 } from 'lucide-react'
 import { Header } from './components/Header'
 import { EditorPanel } from './features/editor/EditorPanel'
 import { PreviewPanel } from './features/preview/PreviewPanel'
@@ -29,6 +29,7 @@ export default function App() {
   const { markdown, customCss, setMarkdown } = useEditorStore()
   const [page, setPage] = useState<'editor' | 'about'>('editor')
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor')
+  const [exportStep, setExportStep] = useState<string | null>(null)
 
   // Resizable panel state
   const [leftWidth, setLeftWidth] = useState(50) // percent
@@ -50,7 +51,18 @@ export default function App() {
       await new Promise((r) => requestAnimationFrame(r))
       await new Promise((r) => setTimeout(r, 50))
     }
-    await exportPdf(markdown, customCss)
+    setExportStep('Preparing document...')
+    await new Promise((r) => setTimeout(r, 300))
+    setExportStep('Rendering preview...')
+    await new Promise((r) => setTimeout(r, 300))
+    setExportStep('Generating PDF...')
+    try {
+      await exportPdf(markdown, customCss)
+    } finally {
+      setExportStep('Saving...')
+      await new Promise((r) => setTimeout(r, 400))
+      setExportStep(null)
+    }
   }, [markdown, customCss])
 
   const handleExportDocx = useCallback(async () => {
@@ -172,6 +184,25 @@ export default function App() {
             </div>
           </main>
         </>
+      )}
+
+      {/* Export loading overlay */}
+      {exportStep && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          background: 'rgba(15, 23, 42, 0.85)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 16,
+        }}>
+          <Loader2 size={40} style={{ color: '#ffffff', animation: 'spin 1s linear infinite' }} />
+          <span style={{ color: '#ffffff', fontSize: 16, fontWeight: 500 }}>{exportStep}</span>
+        </div>
       )}
 
       <Analytics />

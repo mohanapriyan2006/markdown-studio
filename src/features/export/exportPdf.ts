@@ -1,6 +1,10 @@
 import { scopeCss } from '../../lib/scopeCss'
 import { BASE_MARKDOWN_STYLES, markdownToHtml } from '../preview/IframePreview'
 
+function generateId(): string {
+  return Math.random().toString(36).slice(2, 10)
+}
+
 export async function exportPdf(
   markdown: string,
   customCss: string,
@@ -14,33 +18,33 @@ export async function exportPdf(
   const html2pdf = (await import('html2pdf.js')).default
   const mdHtml = markdownToHtml(markdown)
 
-  // Build the clone root exactly like the old inline preview:
-  // .preview-container .preview-light  →  clone root
-  //   <style> base + print overrides    </style>
-  //   <style> scoped custom CSS        </style>
-  //   .markdown-body  →  rendered HTML
+  // Use a UNIQUE scope class that does NOT exist on the real page.
+  // <style> tags are global regardless of DOM position, so we must ensure
+  // the scoped selectors never match any live element.
+  const scopeClass = `pdf-export-clone-${generateId()}`
+
   const clone = document.createElement('div')
-  clone.className = 'preview-container preview-light'
+  clone.className = `${scopeClass} preview-light`
   clone.style.padding = '32px'
   clone.style.maxWidth = 'none'
   clone.style.width = '100%'
   clone.style.background = '#ffffff'
 
-  // Base markdown styles (baked-in light-mode colours, no CSS vars)
+  // Base markdown styles — scope EVERY selector to the unique class so
+  // body/html/* rules cannot leak to the real page.
   const baseStyle = document.createElement('style')
-  baseStyle.textContent = BASE_MARKDOWN_STYLES + `
-    .markdown-body { max-width: none !important; padding: 0 !important; }
-    pre { overflow: hidden !important; }
-    img { max-width: 100%; border-radius: 8px; }
+  baseStyle.textContent = scopeCss(BASE_MARKDOWN_STYLES, `.${scopeClass}`) + `
+    .${scopeClass} .markdown-body { max-width: none !important; padding: 0 !important; }
+    .${scopeClass} pre { overflow: hidden !important; }
+    .${scopeClass} img { max-width: 100%; border-radius: 8px; }
   `
   clone.appendChild(baseStyle)
 
-  // Scoped custom CSS — same call that worked before.
-  // body/html/:root → .preview-container
-  // h1              → .preview-container h1
+  // Scoped custom CSS — scoped to the UNIQUE class so it can ONLY
+  // match this off-screen clone, never the live preview or page body.
   if (customCss.trim()) {
     const customStyle = document.createElement('style')
-    customStyle.textContent = scopeCss(customCss, '.preview-container')
+    customStyle.textContent = scopeCss(customCss, `.${scopeClass}`)
     clone.appendChild(customStyle)
   }
 

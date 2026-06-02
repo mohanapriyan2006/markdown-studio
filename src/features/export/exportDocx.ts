@@ -40,14 +40,15 @@ function toHalfPoints(val: string): number | undefined {
   return Math.round(n * 2) // fallback: treat as pt
 }
 
-function cleanFont(font: string): string {
-  // Take the first quoted font or first word before comma
+function cleanFont(font: string | undefined): string | undefined {
+  if (!font) return undefined
   const q = font.match(/"([^"]+)"|'([^']+)'/)
   if (q) return q[1] || q[2]
   return font.split(',')[0].trim()
 }
 
-function cleanColor(color: string): string | undefined {
+function cleanColor(color: string | undefined): string | undefined {
+  if (!color) return undefined
   const hex = color.match(/#([0-9a-fA-F]{3,6})/)
   if (hex) return hex[1]
   if (color.startsWith('rgb')) {
