@@ -89,6 +89,7 @@ export default function App() {
         onExportPdf={handleExportPdf}
         onExportDocx={handleExportDocx}
         onAbout={() => setPage('about')}
+        onHome={() => setPage('editor')}
       />
 
       {page === 'about' ? (

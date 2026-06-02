@@ -13,19 +13,22 @@ interface HeaderProps {
   onExportPdf: () => Promise<void>
   onExportDocx: () => Promise<void>
   onAbout: () => void
+  onHome: () => void
 }
 
-export function Header({ onUpload, onExportMarkdown, onExportPdf, onExportDocx, onAbout }: HeaderProps) {
+export function Header({ onUpload, onExportMarkdown, onExportPdf, onExportDocx, onAbout, onHome }: HeaderProps) {
   const { lastSaved } = useEditorStore()
 
   return (
     <header className="header" role="banner">
       {/* Logo */}
       <div className="header-logo">
-        <img src={logoImg} alt="Markdown Studio" className="header-logo-img" />
-        <span className="header-logo-text">
-          Markdown <span>Studio</span>
-        </span>
+        <button className="header-logo-btn" onClick={onHome} title="Go to Editor">
+          <img src={logoImg} alt="Markdown Studio" className="header-logo-img" />
+          <span className="header-logo-text">
+            Markdown <span>Studio</span>
+          </span>
+        </button>
         <button
           className="header-info-btn"
           onClick={onAbout}
