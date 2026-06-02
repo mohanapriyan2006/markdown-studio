@@ -17,6 +17,24 @@ export async function exportPdf(
   clone.style.maxWidth = 'none'
   clone.style.width = '100%'
 
+  // Override dark-mode CSS variables so the export is always light
+  const lightVars: Record<string, string> = {
+    '--bg-base': '#ffffff',
+    '--bg-card': '#f8fafc',
+    '--bg-muted': '#f1f5f9',
+    '--bg-hover': '#e8eef6',
+    '--border': '#e2e8f0',
+    '--border-focus': '#6366f1',
+    '--text-primary': '#0f172a',
+    '--text-secondary': '#475569',
+    '--text-muted': '#94a3b8',
+    '--accent': '#6366f1',
+    '--accent-hover': '#4f46e5',
+    '--accent-light': '#eef2ff',
+    '--accent-glow': 'rgba(99,102,241,0.15)',
+  }
+  Object.entries(lightVars).forEach(([k, v]) => clone.style.setProperty(k, v))
+
   // Inject custom CSS as a style tag inside the clone
   if (customCss) {
     const style = document.createElement('style')
@@ -46,6 +64,17 @@ export async function exportPdf(
   `
   clone.prepend(baseStyle)
 
+  // Append clone to the DOM off-screen so html2canvas getComputedStyle
+  // resolves CSS custom properties correctly (detached elements often
+  // keep the dark-theme variable values in some browsers).
+  const wrapper = document.createElement('div')
+  wrapper.style.position = 'fixed'
+  wrapper.style.left = '-9999px'
+  wrapper.style.top = '0'
+  wrapper.style.zIndex = '-1'
+  wrapper.appendChild(clone)
+  document.body.appendChild(wrapper)
+
   const opt = {
     margin: [15, 15, 15, 15] as [number, number, number, number],
     filename,
@@ -54,6 +83,7 @@ export async function exportPdf(
       scale: 2,
       useCORS: true,
       logging: false,
+      backgroundColor: '#ffffff',
     },
     jsPDF: {
       unit: 'mm' as const,
@@ -63,5 +93,9 @@ export async function exportPdf(
     pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
   }
 
-  await html2pdf().set(opt).from(clone).save()
+  try {
+    await html2pdf().set(opt).from(clone).save()
+  } finally {
+    document.body.removeChild(wrapper)
+  }
 }

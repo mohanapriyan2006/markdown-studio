@@ -53,8 +53,8 @@
   --text-secondary: #94a3b8;
   --text-muted: #475569;
 
-  --accent: #c084fc;
-  --accent-hover: #a855f7;
+  --accent: #9333ea;
+  --accent-hover: #7e22ce;
   --accent-light: #3b0764;
   --accent-glow: rgba(192, 132, 252, 0.15);
 
@@ -1357,7 +1357,7 @@ body {
 .ai-msg-text h3 { font-size: 1.05em; font-weight: 600; margin: 0.3em 0 0.15em; color: var(--text-primary); }
 .ai-msg-text h4, .ai-msg-text h5, .ai-msg-text h6 { font-weight: 600; margin: 0.25em 0 0.15em; color: var(--text-secondary); }
 .ai-msg-text blockquote { border-left: 2px solid var(--accent); padding: 6px 12px; margin: 0.6em 0; background: var(--bg-muted); border-radius: 0 6px 6px 0; }
-.ai-msg-text pre { background: #f6f8fa; padding: 10px 12px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); margin: 0.5em 0; }
+.ai-msg-text pre { background: var(--bg-muted); padding: 10px 12px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); margin: 0.5em 0; }
 .ai-msg-text pre code { background: none; border: none; padding: 0; color: var(--text-primary); font-size: 0.85em; }
 .ai-msg-text table { width: 100%; border-collapse: collapse; margin: 0.5em 0; font-size: 0.9em; }
 .ai-msg-text th { background: var(--bg-muted); font-weight: 600; text-align: left; padding: 6px 10px; border: 1px solid var(--border); color: var(--text-primary); }
@@ -1490,15 +1490,16 @@ body {
 .ai-output-code {
   padding: 10px 12px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.6;
-  color: var(--text-secondary);
-  background: var(--bg-base);
+  color: var(--text-primary);
+  background: var(--bg-muted);
   overflow-x: auto;
   white-space: pre-wrap;
   word-break: break-word;
   max-height: 200px;
   overflow-y: auto;
+  border-bottom: 1px solid var(--border);
 }
 .ai-output-code-collapsed {
   max-height: 100px;
@@ -1508,29 +1509,22 @@ body {
 
 .ai-output-preview {
   padding: 12px;
-  border-bottom: 1px solid #e2e8f0;
-  background: #ffffff;
-  color: #0f172a;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-base);
+  color: var(--text-secondary);
   font-size: 13px;
   max-height: 200px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: var(--border) transparent;
 }
 
-/* Force light mode for AI markdown preview regardless of app theme */
 .ai-output-preview.markdown-body,
 .ai-output-preview .markdown-body {
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --accent: #4f46e5;
-  --bg-muted: #f1f5f9;
-  --border: #e2e8f0;
-  --bg-card: #ffffff;
   max-width: none;
   margin: 0;
   color: var(--text-secondary);
-  background: var(--bg-card);
+  background: transparent;
 }
 
 .ai-output-apply-row {
@@ -1953,5 +1947,21 @@ body {
 /* Utility */
 .ai-spin {
   animation: spin 1s linear infinite;
+}
+
+/* ─── Syntax Highlighting Overrides ─────────────────────────────────────────── */
+.ai-msg-text .hljs,
+.ai-output-preview .hljs,
+.ai-output-code .hljs {
+  background: transparent;
+  color: inherit;
+}
+
+.ai-msg-text pre:has(.hljs),
+.ai-output-preview pre:has(.hljs),
+.ai-output-code pre:has(.hljs) {
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
 }
 

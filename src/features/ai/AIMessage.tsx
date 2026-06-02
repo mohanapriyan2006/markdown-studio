@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import rehypeHighlight from 'rehype-highlight'
 import { Copy, Check, FileText, Palette, ChevronDown, ChevronUp, Replace, Plus } from 'lucide-react'
 import type { ChatMessage } from '../../types/ai'
 import { useEditorStore } from '../../stores/editorStore'
@@ -46,7 +47,7 @@ function MarkdownOutputCard({ code }: { code: string }) {
 
       {preview && (
         <div className="ai-output-preview markdown-body">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{code}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{code}</ReactMarkdown>
         </div>
       )}
 
@@ -163,13 +164,25 @@ export function AIMessage({ message }: AIMessageProps) {
   }
 
   const parsed = message.parsed
-  const hasMarkdown = parsed?.markdownCode
-  const hasCSS = parsed?.cssCode
+  const hasStructuredOutput = parsed?.type === 'markdown' || parsed?.type === 'css' || parsed?.type === 'mixed'
 
-  // Extract explanation text (everything outside code blocks)
-  const explanationText = parsed?.rawText
-    .replace(/```(?:markdown|md)\n?[\s\S]*?```/g, '')
-    .replace(/```css\n?[\s\S]*?```/g, '')
+  // Normal text response — render markdown directly without output cards
+  if (!hasStructuredOutput) {
+    return (
+      <div className="ai-msg ai-msg-assistant">
+        <div className="ai-msg-avatar">✦</div>
+        <div className="ai-msg-body">
+          <div className="ai-msg-text">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{message.content}</ReactMarkdown>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Structured response with code blocks — show explanation + output cards
+  const explanationText = parsed.rawText
+    .replace(/```[\s\S]*?```/g, '')
     .trim()
 
   return (
@@ -178,16 +191,11 @@ export function AIMessage({ message }: AIMessageProps) {
       <div className="ai-msg-body">
         {explanationText && (
           <div className="ai-msg-text">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{explanationText}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{explanationText}</ReactMarkdown>
           </div>
         )}
-        {hasMarkdown && <MarkdownOutputCard code={parsed!.markdownCode!} />}
-        {hasCSS && <CSSOutputCard code={parsed!.cssCode!} />}
-        {!explanationText && !hasMarkdown && !hasCSS && (
-          <div className="ai-msg-text">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
-          </div>
-        )}
+        {parsed.markdownCode && <MarkdownOutputCard code={parsed.markdownCode} />}
+        {parsed.cssCode && <CSSOutputCard code={parsed.cssCode} />}
       </div>
     </div>
   )
