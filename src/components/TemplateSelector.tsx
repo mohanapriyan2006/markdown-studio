@@ -54,7 +54,7 @@ export function TemplateSelector() {
           aria-expanded={open}
         >
           <LayoutTemplate size={14} />
-          Templates
+          <span className="btn-label">Templates</span>
           <ChevronDown
             size={12}
             style={{

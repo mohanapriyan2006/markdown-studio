@@ -1,4 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react'
+import { FileText, Eye } from 'lucide-react'
 import { Header } from './components/Header'
 import { EditorPanel } from './features/editor/EditorPanel'
 import { PreviewPanel } from './features/preview/PreviewPanel'
@@ -17,12 +18,15 @@ export default function App() {
   const { markdown, customCss, setMarkdown } = useEditorStore()
   const previewRef = useRef<HTMLDivElement>(null)
   const [page, setPage] = useState<'editor' | 'about'>('editor')
+  const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor')
 
   // Resizable panel state
   const [leftWidth, setLeftWidth] = useState(50) // percent
   const isDragging = useRef(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const resizerRef = useRef<HTMLDivElement>(null)
+  const mobileViewRef = useRef(mobileView)
+  mobileViewRef.current = mobileView
 
   // Export handlers
   const handleExportMarkdown = useCallback(() => {
@@ -30,6 +34,12 @@ export default function App() {
   }, [markdown])
 
   const handleExportPdf = useCallback(async () => {
+    const isMobile = window.innerWidth <= 768
+    if (isMobile && mobileViewRef.current === 'editor') {
+      setMobileView('preview')
+      await new Promise((r) => requestAnimationFrame(r))
+      await new Promise((r) => setTimeout(r, 50))
+    }
     if (!previewRef.current) {
       alert('Nothing to export yet — write some Markdown first.')
       return
@@ -96,40 +106,66 @@ export default function App() {
       {page === 'about' ? (
         <AboutPage onBack={() => setPage('editor')} />
       ) : (
-        <main
-          className="workspace"
-          ref={containerRef}
-          role="main"
-        >
-          {/* Left panel */}
-          <div
-            style={{
-              width: `${leftWidth}%`,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-              flexShrink: 0,
-            }}
+        <>
+          {/* Mobile view toggle tabs */}
+          <div className="mobile-tabs" role="tablist" aria-label="Editor and Preview">
+            <button
+              className={`mobile-tab ${mobileView === 'editor' ? 'active' : ''}`}
+              onClick={() => setMobileView('editor')}
+              role="tab"
+              aria-selected={mobileView === 'editor'}
+            >
+              <FileText size={13} />
+              Editor
+            </button>
+            <button
+              className={`mobile-tab ${mobileView === 'preview' ? 'active' : ''}`}
+              onClick={() => setMobileView('preview')}
+              role="tab"
+              aria-selected={mobileView === 'preview'}
+            >
+              <Eye size={13} />
+              Preview
+            </button>
+          </div>
+
+          <main
+            className="workspace"
+            ref={containerRef}
+            role="main"
+            data-mobile-view={mobileView}
           >
-            <EditorPanel />
-          </div>
+            {/* Left panel */}
+            <div
+              className="workspace-panel workspace-panel-editor"
+              style={{
+                width: `${leftWidth}%`,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                flexShrink: 0,
+              }}
+            >
+              <EditorPanel />
+            </div>
 
-          {/* Resizer */}
-          <div
-            ref={resizerRef}
-            className="resizer"
-            onMouseDown={handleMouseDown}
-            role="separator"
-            aria-orientation="vertical"
-            aria-label="Resize panels"
-            title="Drag to resize panels"
-          />
+            {/* Resizer */}
+            <div
+              ref={resizerRef}
+              className="resizer"
+              onMouseDown={handleMouseDown}
+              role="separator"
+              aria-orientation="vertical"
+              aria-label="Resize panels"
+              title="Drag to resize panels"
+            />
 
-          {/* Right panel */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-            <PreviewPanel previewRef={previewRef} />
-          </div>
-        </main>
+            {/* Right panel */}
+            <div className="workspace-panel workspace-panel-preview" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+              <PreviewPanel previewRef={previewRef} />
+            </div>
+          </main>
+        </>
       )}
 
       <Analytics />

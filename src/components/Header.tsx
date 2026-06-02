@@ -39,7 +39,7 @@ export function Header({ onUpload, onExportMarkdown, onExportPdf, onExportDocx, 
       </div>
 
       {/* Center — saved status */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+      <div className="header-saved-status" style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
         {lastSaved && (
           <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)', display: 'inline-block' }} />
@@ -53,7 +53,7 @@ export function Header({ onUpload, onExportMarkdown, onExportPdf, onExportDocx, 
         <TemplateSelector />
         <FileUploader onFileLoad={onUpload} />
 
-        <div style={{ width: 1, height: 20, background: 'var(--border)', margin: '0 4px' }} />
+        <div className="header-divider" style={{ width: 1, height: 20, background: 'var(--border)', margin: '0 4px' }} />
 
         <ExportMenu
           onExportMarkdown={onExportMarkdown}
@@ -61,7 +61,7 @@ export function Header({ onUpload, onExportMarkdown, onExportPdf, onExportDocx, 
           onExportDocx={onExportDocx}
         />
 
-        <div style={{ width: 1, height: 20, background: 'var(--border)', margin: '0 4px' }} />
+        <div className="header-divider" style={{ width: 1, height: 20, background: 'var(--border)', margin: '0 4px' }} />
 
         <ThemeToggle />
       </div>

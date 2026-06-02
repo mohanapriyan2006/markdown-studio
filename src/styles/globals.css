@@ -703,7 +703,7 @@ body {
   height: 28px;
   border-radius: 4px;
   cursor: pointer;
-  border: none;
+  border: 1px solid #7d2ec2d5;
   background: transparent;
   color: var(--text-muted);
   transition: all 0.12s ease;
@@ -1142,6 +1142,7 @@ body {
   padding: 1px;
   background: linear-gradient(135deg, #9333ea, #a855f7, #c084fc);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }
@@ -1963,5 +1964,259 @@ body {
   background: var(--bg-muted);
   border: 1px solid var(--border);
   border-radius: 6px;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE STYLES
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Mobile Tabs (editor / preview toggle) ─────────────────────────────────── */
+.mobile-tabs {
+  display: none;
+  flex-shrink: 0;
+  height: 44px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 4px 12px;
+  gap: 4px;
+  align-items: center;
+}
+
+.mobile-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.mobile-tab.active {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+/* ─── Workspace panel visibility on mobile ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .workspace {
+    flex-direction: column !important;
+  }
+
+  .mobile-tabs {
+    display: flex;
+  }
+
+  .workspace[data-mobile-view="editor"] .workspace-panel-editor {
+    display: flex !important;
+    flex: 1;
+    width: 100% !important;
+  }
+
+  .workspace[data-mobile-view="editor"] .resizer,
+  .workspace[data-mobile-view="editor"] .workspace-panel-preview {
+    display: none !important;
+  }
+
+  .workspace[data-mobile-view="preview"] .workspace-panel-editor,
+  .workspace[data-mobile-view="preview"] .resizer {
+    display: none !important;
+  }
+
+  .workspace[data-mobile-view="preview"] .workspace-panel-preview {
+    display: flex !important;
+    flex: 1;
+    width: 100% !important;
+  }
+}
+
+/* ─── Header responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .btn-label {
+    display: none;
+  }
+
+  .header {
+    padding: 0 10px;
+    gap: 6px;
+  }
+
+  .header-actions {
+    gap: 2px;
+  }
+
+  .header-actions .btn {
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    height: 52px;
+  }
+
+  .header-logo-btn img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .header-actions .btn-ghost,
+  .header-actions .btn-outline {
+    padding: 5px 6px;
+  }
+
+  .header-actions .btn-primary {
+    padding: 5px 8px;
+  }
+
+  .header-saved-status {
+    display: none !important;
+  }
+
+  .header-divider {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-actions .btn-ghost {
+    display: none;
+  }
+}
+
+/* ─── Editor tabs scrollable on narrow screens ──────────────────────────────── */
+@media (max-width: 640px) {
+  .tabs {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}
+
+/* ─── AI Settings single-column on mobile ───────────────────────────────────── */
+@media (max-width: 640px) {
+  .ai-field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-settings-body {
+    padding: 10px;
+  }
+
+  .ai-settings-panel {
+    overflow-y: auto;
+  }
+
+  .ai-settings-header {
+    padding: 8px 10px;
+  }
+}
+
+/* ─── AI Chat bubble width on very small screens ──────────────────────────── */
+@media (max-width: 480px) {
+  .ai-msg-bubble-user {
+    max-width: 92%;
+  }
+
+  .ai-msg-body {
+    max-width: calc(100% - 30px);
+  }
+
+  .ai-msg-avatar {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+}
+
+/* ─── About page small-screen tweaks ────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .about-page {
+    padding: 20px 14px;
+  }
+
+  .about-title {
+    font-size: 22px;
+  }
+
+  .about-subtitle {
+    font-size: 13px;
+  }
+
+  .about-feature-card {
+    padding: 12px;
+  }
+
+  .about-dev-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .about-dev-links {
+    justify-content: center;
+  }
+}
+
+/* ─── Dropdown & modal overflow safety ──────────────────────────────────────── */
+.dropdown-menu {
+  max-width: calc(100vw - 24px);
+  overflow-wrap: break-word;
+}
+
+.template-modal {
+  max-width: calc(100vw - 32px);
+  width: 90%;
+}
+
+/* ─── Touch targets for coarse pointers ─────────────────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  .theme-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .ai-icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .tab {
+    min-height: 36px;
+  }
+
+  .mobile-tab {
+    min-height: 40px;
+  }
+
+  .dropdown-item {
+    min-height: 44px;
+  }
+
+  .ai-quick-chip {
+    min-height: 36px;
+  }
+
+  .ai-send-btn {
+    width: 40px;
+    height: 40px;
+  }
 }
 

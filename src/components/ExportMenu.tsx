@@ -45,7 +45,7 @@ export function ExportMenu({ onExportMarkdown, onExportPdf, onExportDocx }: Expo
         aria-expanded={open}
       >
         {loading ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={14} />}
-        Export
+        <span className="btn-label">Export</span>
         <ChevronDown size={12} style={{ opacity: 0.7, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
       </button>
 

@@ -79,7 +79,7 @@ export function FileUploader({ onFileLoad }: FileUploaderProps) {
         id="upload-file-btn"
       >
         <Upload size={14} />
-        Upload
+        <span className="btn-label">Upload</span>
       </button>
     </>
   )
