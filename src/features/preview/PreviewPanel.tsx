@@ -5,6 +5,7 @@ import rehypeHighlight from 'rehype-highlight'
 import rehypeRaw from 'rehype-raw'
 import { Eye, FileText } from 'lucide-react'
 import { useEditorStore } from '../../stores/editorStore'
+import { scopeCss } from '../../lib/scopeCss'
 
 interface PreviewPanelProps {
   previewRef: React.RefObject<HTMLDivElement | null>
@@ -30,31 +31,14 @@ export function PreviewPanel({ previewRef }: PreviewPanelProps) {
 
       {/* Preview — always rendered in light mode */}
       <div
-        className="preview-container"
-        style={{
-          /* Force light-mode CSS variables so dark theme never bleeds into the preview */
-          '--bg-base': '#ffffff',
-          '--bg-card': '#f8fafc',
-          '--bg-muted': '#f1f5f9',
-          '--bg-hover': '#e8eef6',
-          '--border': '#e2e8f0',
-          '--border-focus': '#6366f1',
-          '--text-primary': '#0f172a',
-          '--text-secondary': '#475569',
-          '--text-muted': '#94a3b8',
-          '--accent': '#6366f1',
-          '--accent-hover': '#4f46e5',
-          '--accent-light': '#eef2ff',
-          '--accent-glow': 'rgba(99,102,241,0.15)',
-          background: '#ffffff',
-          color: '#0f172a',
-        } as React.CSSProperties}
+        ref={previewRef}
+        className="preview-container preview-light"
       >
-        {/* Inject custom CSS */}
+        {/* Inject custom CSS — scoped to preview container so it never leaks */}
         {customCss && (
           <style
             id={`custom-css-${styleId}`}
-            dangerouslySetInnerHTML={{ __html: customCss }}
+            dangerouslySetInnerHTML={{ __html: scopeCss(customCss, '.preview-container') }}
           />
         )}
 
@@ -68,7 +52,6 @@ export function PreviewPanel({ previewRef }: PreviewPanelProps) {
           </div>
         ) : (
           <div
-            ref={previewRef}
             className="markdown-body"
             id="markdown-preview"
           >
