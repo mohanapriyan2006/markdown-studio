@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
 import { Copy, Check, FileText, Palette, ChevronDown, ChevronUp, Replace, Plus, Sparkles } from 'lucide-react'
 import type { ChatMessage } from '../../types/ai'
 import { useEditorStore } from '../../stores/editorStore'
+import { useAIStore } from '../../stores/aiStore'
 
 interface AIMessageProps {
   message: ChatMessage
@@ -62,7 +63,7 @@ function MarkdownOutputCard({ code }: { code: string }) {
         </div>
       )}
 
-      <pre className="ai-output-code"><code>{code}</code></pre>
+      <pre className="ai-output-code"><code className="language-markdown">{code}</code></pre>
 
       <div className="ai-output-apply-row">
         <button
@@ -118,7 +119,7 @@ function CSSOutputCard({ code }: { code: string }) {
       </div>
 
       <pre className={`ai-output-code ${!expanded ? 'ai-output-code-collapsed' : ''}`}>
-        <code>{code}</code>
+        <code className="language-css">{code}</code>
       </pre>
 
       <div className="ai-output-apply-row">
@@ -143,10 +144,60 @@ function CSSOutputCard({ code }: { code: string }) {
   )
 }
 
+function DemoErrorSuggestion() {
+  const { demoMode, setShowSettings } = useAIStore()
+  if (!demoMode) return null
+  return (
+    <div className="ai-demo-error-suggestion">
+      <span>Demo AI may be temporarily unavailable.</span>
+      <button className="ai-demo-error-btn" onClick={() => setShowSettings(true)}>
+        Configure your own API key for better access
+      </button>
+    </div>
+  )
+}
+
 function LoadingDots() {
   return (
     <div className="ai-loading-dots">
       <span /><span /><span />
+    </div>
+  )
+}
+
+const LOADING_WORDS = ['Thinking', 'Exploring', 'Analyzing', 'Generating', 'Finalizing']
+
+function LoadingWithDelay() {
+  const [showDelay, setShowDelay] = useState(false)
+  const [wordIndex, setWordIndex] = useState(0)
+  const [fading, setFading] = useState(false)
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowDelay(true), 1200)
+    return () => clearTimeout(t)
+  }, [])
+
+  useEffect(() => {
+    if (!showDelay) return
+    const interval = setInterval(() => {
+      setFading(true)
+      const timeout = setTimeout(() => {
+        setWordIndex((i) => (i + 1) % LOADING_WORDS.length)
+        setFading(false)
+      }, 300)
+      return () => clearTimeout(timeout)
+    }, 2200)
+    return () => clearInterval(interval)
+  }, [showDelay])
+
+  return (
+    <div className="ai-loading-row">
+      <LoadingDots />
+      {showDelay && (
+        <span className={`ai-loading-word ${fading ? 'ai-loading-word-fade' : ''}`}>
+          {LOADING_WORDS[wordIndex]}…
+        </span>
+      )}
     </div>
   )
 }
@@ -168,7 +219,7 @@ export function AIMessage({ message }: AIMessageProps) {
       <div className="ai-msg ai-msg-assistant">
         <div className="ai-msg-avatar"><Sparkles size={14} /></div>
         <div className="ai-msg-bubble ai-msg-bubble-assistant">
-          <LoadingDots />
+          <LoadingWithDelay />
         </div>
       </div>
     )
@@ -178,8 +229,11 @@ export function AIMessage({ message }: AIMessageProps) {
     return (
       <div className="ai-msg ai-msg-assistant">
         <div className="ai-msg-avatar"><Sparkles size={14} /></div>
-        <div className="ai-msg-bubble ai-msg-bubble-error">
-          {message.error}
+        <div className="ai-msg-body">
+          <div className="ai-msg-bubble ai-msg-bubble-error">
+            {message.error}
+          </div>
+          <DemoErrorSuggestion />
         </div>
       </div>
     )

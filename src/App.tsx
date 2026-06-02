@@ -11,12 +11,22 @@ import { exportMarkdown } from './features/export/exportMarkdown'
 import { exportPdf } from './features/export/exportPdf'
 import { exportDocx } from './features/export/exportDocx'
 import { Analytics } from "@vercel/analytics/react"
+import { useAIStore } from './stores/aiStore'
 
 export default function App() {
   useTheme()
 
+  // Auto-wire demo AI for new users when VITE_API_KEY is present.
+  // The .env key is never stored in localStorage; it is injected at runtime.
+  useEffect(() => {
+    const { config, demoMode, setDemoMode } = useAIStore.getState()
+    const hasDemoKey = Boolean(import.meta.env.VITE_API_KEY)
+    if (!config.apiKey.trim() && !demoMode && hasDemoKey) {
+      setDemoMode(true)
+    }
+  }, [])
+
   const { markdown, customCss, setMarkdown } = useEditorStore()
-  const previewRef = useRef<HTMLDivElement>(null)
   const [page, setPage] = useState<'editor' | 'about'>('editor')
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor')
 
@@ -40,16 +50,12 @@ export default function App() {
       await new Promise((r) => requestAnimationFrame(r))
       await new Promise((r) => setTimeout(r, 50))
     }
-    if (!previewRef.current) {
-      alert('Nothing to export yet — write some Markdown first.')
-      return
-    }
-    await exportPdf(previewRef.current, customCss)
-  }, [customCss])
+    await exportPdf(markdown, customCss)
+  }, [markdown, customCss])
 
   const handleExportDocx = useCallback(async () => {
-    await exportDocx(markdown)
-  }, [markdown])
+    await exportDocx(markdown, customCss)
+  }, [markdown, customCss])
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -162,7 +168,7 @@ export default function App() {
 
             {/* Right panel */}
             <div className="workspace-panel workspace-panel-preview" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-              <PreviewPanel previewRef={previewRef} />
+              <PreviewPanel />
             </div>
           </main>
         </>

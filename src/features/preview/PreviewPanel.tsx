@@ -1,20 +1,10 @@
-import React, { useRef, useId } from 'react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeHighlight from 'rehype-highlight'
-import rehypeRaw from 'rehype-raw'
+import React from 'react'
 import { Eye, FileText } from 'lucide-react'
 import { useEditorStore } from '../../stores/editorStore'
-import { scopeCss } from '../../lib/scopeCss'
+import { IframePreview } from './IframePreview'
 
-interface PreviewPanelProps {
-  previewRef: React.RefObject<HTMLDivElement | null>
-}
-
-export function PreviewPanel({ previewRef }: PreviewPanelProps) {
+export function PreviewPanel() {
   const { markdown: mdContent, customCss } = useEditorStore()
-  const styleId = useId()
-
   const isEmpty = !mdContent.trim()
 
   return (
@@ -29,19 +19,8 @@ export function PreviewPanel({ previewRef }: PreviewPanelProps) {
         </span>
       </div>
 
-      {/* Preview — always rendered in light mode */}
-      <div
-        ref={previewRef}
-        className="preview-container preview-light"
-      >
-        {/* Inject custom CSS — scoped to preview container so it never leaks */}
-        {customCss && (
-          <style
-            id={`custom-css-${styleId}`}
-            dangerouslySetInnerHTML={{ __html: scopeCss(customCss, '.preview-container') }}
-          />
-        )}
-
+      {/* Preview — isolated in an iframe so custom CSS cannot leak */}
+      <div className="preview-container preview-light">
         {isEmpty ? (
           <div className="preview-empty">
             <div className="preview-empty-icon">
@@ -51,46 +30,9 @@ export function PreviewPanel({ previewRef }: PreviewPanelProps) {
             <span style={{ fontSize: 12 }}>Supports GFM, tables, task lists &amp; code blocks</span>
           </div>
         ) : (
-          <div
-            className="markdown-body"
-            id="markdown-preview"
-          >
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeHighlight, rehypeRaw]}
-              components={{
-                input: ({ type, checked, ...props }) => {
-                  if (type === 'checkbox') {
-                    return (
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        readOnly
-                        style={{ marginRight: 6, accentColor: '#6366f1' }}
-                        {...props}
-                      />
-                    )
-                  }
-                  return <input type={type} {...props} />
-                },
-                a: ({ children, href, ...props }) => (
-                  <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
-                    {children}
-                  </a>
-                ),
-                pre: ({ children, ...props }) => (
-                  <pre {...props} style={{ position: 'relative' }}>
-                    {children}
-                  </pre>
-                ),
-              }}
-            >
-              {mdContent}
-            </ReactMarkdown>
-          </div>
+          <IframePreview markdown={mdContent} customCss={customCss} />
         )}
       </div>
     </div>
-
   )
 }

@@ -102,6 +102,7 @@ export const useAIStore = create<AIState>()(
       partialize: (s) => ({
         config: s.config,
         isConfigured: s.isConfigured,
+        demoMode: s.demoMode,
         messages: s.messages.slice(-20), // persist last 20
         showSettings: s.showSettings,
       }),

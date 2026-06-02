@@ -22,10 +22,10 @@ function isModelUnavailableError(error: unknown): boolean {
 // ─── Output Parser ──────────────────────────────────────────────────────────
 
 export function parseAIResponse(content: string): ParsedOutput {
-  // Match ```markdown or ```md blocks
-  const mdMatch = content.match(/```(?:markdown|md)\n?([\s\S]*?)```/)
-  // Match ```css blocks
-  const cssMatch = content.match(/```css\n?([\s\S]*?)```/)
+  // Match ```markdown or ```md blocks (case-insensitive, handles optional space)
+  const mdMatch = content.match(/```(?:markdown|md)\s*\n?([\s\S]*?)```/i)
+  // Match ```css blocks (case-insensitive, handles optional space)
+  const cssMatch = content.match(/```css\s*\n?([\s\S]*?)```/i)
 
   if (mdMatch && cssMatch) {
     return { type: 'mixed', markdownCode: mdMatch[1].trim(), cssCode: cssMatch[1].trim(), rawText: content }
