@@ -26,8 +26,19 @@ function CopyButton({ text }: { text: string }) {
 }
 
 function MarkdownOutputCard({ code }: { code: string }) {
-  const { setMarkdown, markdown } = useEditorStore()
+  const { setMarkdown, markdown, setActiveTab, markSaved } = useEditorStore()
   const [preview, setPreview] = useState(false)
+
+  const handleReplace = () => {
+    setMarkdown(code)
+    setActiveTab('markdown')
+    markSaved()
+  }
+  const handleAppend = () => {
+    setMarkdown(markdown + '\n\n' + code)
+    setActiveTab('markdown')
+    markSaved()
+  }
 
   return (
     <div className="ai-output-card ai-output-md">
@@ -56,7 +67,7 @@ function MarkdownOutputCard({ code }: { code: string }) {
       <div className="ai-output-apply-row">
         <button
           className="ai-apply-btn ai-apply-replace"
-          onClick={() => setMarkdown(code)}
+          onClick={handleReplace}
           title="Replace editor content"
         >
           <Replace size={12} />
@@ -64,7 +75,7 @@ function MarkdownOutputCard({ code }: { code: string }) {
         </button>
         <button
           className="ai-apply-btn ai-apply-append"
-          onClick={() => setMarkdown(markdown + '\n\n' + code)}
+          onClick={handleAppend}
           title="Append to editor"
         >
           <Plus size={12} />
@@ -76,8 +87,19 @@ function MarkdownOutputCard({ code }: { code: string }) {
 }
 
 function CSSOutputCard({ code }: { code: string }) {
-  const { setCustomCss, customCss } = useEditorStore()
+  const { setCustomCss, customCss, setActiveTab, markSaved } = useEditorStore()
   const [expanded, setExpanded] = useState(false)
+
+  const handleReplace = () => {
+    setCustomCss(code)
+    setActiveTab('css')
+    markSaved()
+  }
+  const handleAppend = () => {
+    setCustomCss(customCss + '\n\n' + code)
+    setActiveTab('css')
+    markSaved()
+  }
 
   return (
     <div className="ai-output-card ai-output-css">
@@ -102,7 +124,7 @@ function CSSOutputCard({ code }: { code: string }) {
       <div className="ai-output-apply-row">
         <button
           className="ai-apply-btn ai-apply-replace"
-          onClick={() => setCustomCss(code)}
+          onClick={handleReplace}
           title="Replace current CSS"
         >
           <Replace size={12} />
@@ -110,7 +132,7 @@ function CSSOutputCard({ code }: { code: string }) {
         </button>
         <button
           className="ai-apply-btn ai-apply-append"
-          onClick={() => setCustomCss(customCss + '\n\n' + code)}
+          onClick={handleAppend}
           title="Append to CSS"
         >
           <Plus size={12} />
