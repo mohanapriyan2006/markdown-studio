@@ -20,7 +20,7 @@ body {
   font-size: 15px;
   line-height: 1.75;
   color: #1e293b;
-  padding: 32px;
+  padding: 12px;
   animation: fadeIn 0.2s ease;
 }
 

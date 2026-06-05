@@ -2,6 +2,11 @@ import React from 'react'
 import { Eye, FileText } from 'lucide-react'
 import { useEditorStore } from '../../stores/editorStore'
 import { IframePreview } from './IframePreview'
+import { ExportMenu } from '../../components/ExportMenu'
+import { exportPdf } from '../export/exportPdf'
+import { exportDocx } from '../export/exportDocx'
+import { exportMarkdown } from '../export/exportMarkdown'
+import { exportHtml } from '../export/exportHtml'
 
 export function PreviewPanel() {
   const { markdown: mdContent, customCss } = useEditorStore()
@@ -20,7 +25,7 @@ export function PreviewPanel() {
       </div>
 
       {/* Preview — isolated in an iframe so custom CSS cannot leak */}
-      <div className="preview-container preview-light">
+      <div className="preview-container preview-light" style={{ position: 'relative' }}>
         {isEmpty ? (
           <div className="preview-empty">
             <div className="preview-empty-icon">
@@ -32,6 +37,16 @@ export function PreviewPanel() {
         ) : (
           <IframePreview markdown={mdContent} customCss={customCss} />
         )}
+
+        {/* Floating Export Button (mobile only) */}
+        <div className="preview-export-menu">
+          <ExportMenu
+            onExportMarkdown={() => exportMarkdown(mdContent)}
+            onExportPdf={() => exportPdf(mdContent, customCss)}
+            onExportDocx={() => exportDocx(mdContent, customCss)}
+            onExportHtml={() => exportHtml(mdContent, customCss)}
+          />
+        </div>
       </div>
     </div>
   )
