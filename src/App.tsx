@@ -10,6 +10,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { exportMarkdown } from './features/export/exportMarkdown'
 import { exportPdf } from './features/export/exportPdf'
 import { exportDocx } from './features/export/exportDocx'
+import { exportHtml } from './features/export/exportHtml'
 import { Analytics } from "@vercel/analytics/react"
 import { useAIStore } from './stores/aiStore'
 
@@ -69,12 +70,17 @@ export default function App() {
     await exportDocx(markdown, customCss)
   }, [markdown, customCss])
 
+  const handleExportHtml = useCallback(() => {
+    exportHtml(markdown, customCss)
+  }, [markdown, customCss])
+
   // Keyboard shortcuts
   useKeyboardShortcuts({
     onAction: (action) => {
       if (action === 'save') handleExportMarkdown()
       if (action === 'pdf') handleExportPdf()
       if (action === 'docx') handleExportDocx()
+      if (action === 'html') handleExportHtml()
     },
   })
 
@@ -117,6 +123,7 @@ export default function App() {
         onExportMarkdown={handleExportMarkdown}
         onExportPdf={handleExportPdf}
         onExportDocx={handleExportDocx}
+        onExportHtml={handleExportHtml}
         onAbout={() => setPage('about')}
         onHome={() => setPage('editor')}
       />

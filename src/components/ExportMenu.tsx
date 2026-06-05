@@ -1,16 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react'
 import {
   Download, FileText, FileType2, ChevronDown,
-  FileJson2, Loader2
+  FileJson2, Loader2, Code2
 } from 'lucide-react'
 
 interface ExportMenuProps {
   onExportMarkdown: () => void
   onExportPdf: () => Promise<void>
   onExportDocx: () => Promise<void>
+  onExportHtml?: () => void
 }
 
-export function ExportMenu({ onExportMarkdown, onExportPdf, onExportDocx }: ExportMenuProps) {
+export function ExportMenu({ onExportMarkdown, onExportPdf, onExportDocx, onExportHtml }: ExportMenuProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const ref = useRef<HTMLDivElement>(null)
@@ -75,6 +76,18 @@ export function ExportMenu({ onExportMarkdown, onExportPdf, onExportDocx }: Expo
             <FileText size={15} style={{ color: '#2563eb' }} />
             <span>Word Document</span>
             <kbd style={{ marginLeft: 'auto', fontSize: 10, opacity: 0.5, fontFamily: 'var(--font-mono)' }}>⌘D</kbd>
+          </button>
+
+          <button
+            className="dropdown-item"
+            role="menuitem"
+            id="export-html-btn"
+            onClick={() => handle('html', () => { onExportHtml?.(); return Promise.resolve() })}
+            disabled={loading !== null}
+          >
+            <Code2 size={15} style={{ color: '#10b981' }} />
+            <span>HTML File</span>
+            <kbd style={{ marginLeft: 'auto', fontSize: 10, opacity: 0.5, fontFamily: 'var(--font-mono)' }}>⌘H</kbd>
           </button>
 
           <div className="dropdown-divider" />

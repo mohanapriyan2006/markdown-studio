@@ -12,11 +12,12 @@ interface HeaderProps {
   onExportMarkdown: () => void
   onExportPdf: () => Promise<void>
   onExportDocx: () => Promise<void>
+  onExportHtml: () => void
   onAbout: () => void
   onHome: () => void
 }
 
-export function Header({ onUpload, onExportMarkdown, onExportPdf, onExportDocx, onAbout, onHome }: HeaderProps) {
+export function Header({ onUpload, onExportMarkdown, onExportPdf, onExportDocx, onExportHtml, onAbout, onHome }: HeaderProps) {
   const { lastSaved } = useEditorStore()
 
   return (
@@ -59,6 +60,7 @@ export function Header({ onUpload, onExportMarkdown, onExportPdf, onExportDocx, 
           onExportMarkdown={onExportMarkdown}
           onExportPdf={onExportPdf}
           onExportDocx={onExportDocx}
+          onExportHtml={onExportHtml}
         />
 
         <div className="header-divider" style={{ width: 1, height: 20, background: 'var(--border)', margin: '0 4px' }} />

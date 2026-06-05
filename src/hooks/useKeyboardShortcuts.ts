@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react'
 import { useEditorStore } from '../stores/editorStore'
 
-type Action = 'save' | 'pdf' | 'docx'
+type Action = 'save' | 'pdf' | 'docx' | 'html'
 
 interface UseKeyboardShortcutsOptions {
   onAction: (action: Action) => void
@@ -27,6 +27,10 @@ export function useKeyboardShortcuts({ onAction }: UseKeyboardShortcutsOptions) 
         case 'd':
           e.preventDefault()
           onAction('docx')
+          break
+        case 'h':
+          e.preventDefault()
+          onAction('html')
           break
       }
     },
