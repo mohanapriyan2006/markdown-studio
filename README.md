@@ -30,6 +30,11 @@ A modern AI-powered Markdown workspace for writing, formatting, and exporting be
 
 ## Overview
 
+<div align="center">
+<img src="screenshots/image1.png" width="100%" />
+<img src="screenshots/image2.png" width="100%" />
+</div>
+
 Markdown Studio is a next-generation Markdown editor that combines powerful writing tools, live document rendering, custom styling, AI-assisted content generation, and professional export capabilities into a single seamless workspace.
 
 Whether you're creating:
@@ -60,6 +65,11 @@ Markdown Studio helps you move from idea → polished document in minutes.
 
 ### AI Copilot
 
+<div align="center">
+<img src="screenshots/image4.png" width="100%" />
+<img src="screenshots/image5.png" width="100%" />
+</div>
+
 Generate, improve, rewrite, summarize, and expand content directly inside the editor.
 
 Supported providers:
@@ -84,6 +94,10 @@ Capabilities:
 ---
 
 ### Advanced Styling
+
+<div align="center">
+<img src="screenshots/image3.png" width="100%" />
+</div>
 
 Transform plain Markdown into beautifully designed documents.
 
@@ -139,16 +153,6 @@ Your content remains under your control.
 * No server-side document storage
 * AI requests only occur when configured by the user
 * Bring your own API keys
-
----
-
-## Screenshots
-
-<div align="center">
-
-<img src="public/screenshots/editor.png" width="100%" />
-
-</div>
 
 ---
 
