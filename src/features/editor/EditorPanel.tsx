@@ -1,11 +1,29 @@
-import React, { useCallback, useMemo } from 'react'
-import CodeMirror from '@uiw/react-codemirror'
+import React, { useCallback, useMemo, useRef } from 'react'
+import CodeMirror, { ReactCodeMirrorRef } from '@uiw/react-codemirror'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { css } from '@codemirror/lang-css'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { EditorView } from '@codemirror/view'
 import { languages } from '@codemirror/language-data'
-import { FileText, Palette, RotateCcw, Type, Sparkles } from 'lucide-react'
+import {
+  FileText,
+  Palette,
+  RotateCcw,
+  Type,
+  Sparkles,
+  Bold,
+  Italic,
+  Code,
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Quote,
+  Link,
+  Image,
+  Minus,
+} from 'lucide-react'
 import { useEditorStore } from '../../stores/editorStore'
 import { countWords, countChars } from '../../lib/utils'
 import { AICopilot } from '../ai/AICopilot'
@@ -26,9 +44,30 @@ export function EditorPanel() {
   } = useEditorStore()
 
   const isDark = useIsDark()
+  const cmRef = useRef<ReactCodeMirrorRef>(null)
 
   const wordCount = useMemo(() => countWords(mdContent), [mdContent])
   const charCount = useMemo(() => countChars(mdContent), [mdContent])
+
+  const insertMarkdown = useCallback((before: string, after: string = '', placeholder: string = '') => {
+    if (!cmRef.current) return
+
+    const view = cmRef.current.view
+    if (!view) return
+
+    const { state, dispatch } = view
+    const range = state.selection.main
+    const selectedText = state.doc.sliceString(range.from, range.to)
+    const newText = `${before}${selectedText || placeholder}${after}`
+
+    dispatch({
+      changes: {
+        from: range.from,
+        to: range.to,
+        insert: newText,
+      },
+    })
+  }, [])
 
   const markdownExtensions = useMemo(
     () => [
@@ -117,6 +156,113 @@ export function EditorPanel() {
         </div>
       </div>
 
+      {/* Markdown toolbar */}
+      {activeTab === 'markdown' && (
+        <div className="markdown-toolbar">
+          <div className="toolbar-group">
+            <button
+              className="toolbar-btn"
+              onClick={() => insertMarkdown('# ', '', 'Heading 1')}
+              title="Heading 1"
+              aria-label="Insert Heading 1"
+            >
+              <Heading1 size={14} />
+            </button>
+            <button
+              className="toolbar-btn"
+              onClick={() => insertMarkdown('## ', '', 'Heading 2')}
+              title="Heading 2"
+              aria-label="Insert Heading 2"
+            >
+              <Heading2 size={14} />
+            </button>
+            <button
+              className="toolbar-btn"
+              onClick={() => insertMarkdown('### ', '', 'Heading 3')}
+              title="Heading 3"
+              aria-label="Insert Heading 3"
+            >
+              <Heading3 size={14} />
+            </button>
+            <div className="toolbar-divider" />
+            <button
+              className="toolbar-btn"
+              onClick={() => insertMarkdown('**', '**', 'bold')}
+              title="Bold"
+              aria-label="Insert Bold"
+            >
+              <Bold size={14} />
+            </button>
+            <button
+              className="toolbar-btn"
+              onClick={() => insertMarkdown('*', '*', 'italic')}
+              title="Italic"
+              aria-label="Insert Italic"
+            >
+              <Italic size={14} />
+            </button>
+            <button
+              className="toolbar-btn"
+              onClick={() => insertMarkdown('`', '`', 'code')}
+              title="Inline Code"
+              aria-label="Insert Inline Code"
+            >
+              <Code size={14} />
+            </button>
+            <div className="toolbar-divider" />
+            <button
+              className="toolbar-btn"
+              onClick={() => insertMarkdown('- ', '', 'List item')}
+              title="Bullet List"
+              aria-label="Insert Bullet List"
+            >
+              <List size={14} />
+            </button>
+            <button
+              className="toolbar-btn"
+              onClick={() => insertMarkdown('1. ', '', 'List item')}
+              title="Numbered List"
+              aria-label="Insert Numbered List"
+            >
+              <ListOrdered size={14} />
+            </button>
+            <button
+              className="toolbar-btn"
+              onClick={() => insertMarkdown('> ', '', 'Quote')}
+              title="Blockquote"
+              aria-label="Insert Blockquote"
+            >
+              <Quote size={14} />
+            </button>
+            <div className="toolbar-divider" />
+            <button
+              className="toolbar-btn"
+              onClick={() => insertMarkdown('[', '](url)', 'link text')}
+              title="Link"
+              aria-label="Insert Link"
+            >
+              <Link size={14} />
+            </button>
+            <button
+              className="toolbar-btn"
+              onClick={() => insertMarkdown('![', '](url)', 'alt text')}
+              title="Image"
+              aria-label="Insert Image"
+            >
+              <Image size={14} />
+            </button>
+            <button
+              className="toolbar-btn"
+              onClick={() => insertMarkdown('\n---\n')}
+              title="Horizontal Rule"
+              aria-label="Insert Horizontal Rule"
+            >
+              <Minus size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* CSS toolbar */}
       {activeTab === 'css' && (
         <div className="css-toolbar">
@@ -141,6 +287,7 @@ export function EditorPanel() {
           <div className="editor-container">
             {activeTab === 'markdown' ? (
               <CodeMirror
+                ref={cmRef}
                 value={mdContent}
                 onChange={setMarkdown}
                 extensions={markdownExtensions}
