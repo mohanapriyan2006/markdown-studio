@@ -8,8 +8,12 @@ function generateId(): string {
 export async function exportPdf(
   markdown: string,
   customCss: string,
-  filename = 'document.pdf'
+  filename = 'document.pdf',
+  customTitle?: string
 ): Promise<void> {
+  if (customTitle) {
+    filename = customTitle.replace(/[/\\?%*:|"<>]/g, '_') + '.pdf'
+  }
   if (!markdown.trim()) {
     alert('Nothing to export yet — write some Markdown first.')
     return

@@ -1,9 +1,10 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react'
-import { FileText, Eye, Loader2 } from 'lucide-react'
+import { FileText, Eye, Loader2, Download } from 'lucide-react'
 import { Header } from './components/Header'
 import { EditorPanel } from './features/editor/EditorPanel'
 import { PreviewPanel } from './features/preview/PreviewPanel'
 import { AboutPage } from './pages/AboutPage'
+import { PromptModal } from './components/PromptModal'
 import { useEditorStore } from './stores/editorStore'
 import { useTheme } from './hooks/useTheme'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
@@ -11,6 +12,7 @@ import { exportMarkdown } from './features/export/exportMarkdown'
 import { exportPdf } from './features/export/exportPdf'
 import { exportDocx } from './features/export/exportDocx'
 import { exportHtml } from './features/export/exportHtml'
+import type { SavedDocument } from './services/savedDocs'
 import { Analytics } from "@vercel/analytics/react"
 import { useAIStore } from './stores/aiStore'
 
@@ -27,10 +29,13 @@ export default function App() {
     }
   }, [])
 
-  const { markdown, customCss, setMarkdown } = useEditorStore()
+  const { markdown, customCss, setMarkdown, setCustomCss } = useEditorStore()
   const [page, setPage] = useState<'editor' | 'about'>('editor')
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor')
   const [exportStep, setExportStep] = useState<string | null>(null)
+  const [exportTitleModal, setExportTitleModal] = useState<{
+    type: 'markdown' | 'pdf' | 'docx' | 'html'
+  } | null>(null)
 
   // Resizable panel state
   const [leftWidth, setLeftWidth] = useState(50) // percent
@@ -40,38 +45,63 @@ export default function App() {
   const mobileViewRef = useRef(mobileView)
   mobileViewRef.current = mobileView
 
-  // Export handlers
+  // Load saved document
+  const handleLoadDoc = useCallback((doc: SavedDocument) => {
+    setMarkdown(doc.markdown)
+    setCustomCss(doc.customCss)
+  }, [setMarkdown, setCustomCss])
+
+  // Export handlers with title prompt
   const handleExportMarkdown = useCallback(() => {
-    exportMarkdown(markdown)
-  }, [markdown])
+    setExportTitleModal({ type: 'markdown' })
+  }, [])
 
   const handleExportPdf = useCallback(async () => {
-    const isMobile = window.innerWidth <= 768
-    if (isMobile && mobileViewRef.current === 'editor') {
-      setMobileView('preview')
-      await new Promise((r) => requestAnimationFrame(r))
-      await new Promise((r) => setTimeout(r, 50))
-    }
-    setExportStep('Preparing document...')
-    await new Promise((r) => setTimeout(r, 300))
-    setExportStep('Rendering preview...')
-    await new Promise((r) => setTimeout(r, 300))
-    setExportStep('Generating PDF...')
-    try {
-      await exportPdf(markdown, customCss)
-    } finally {
-      setExportStep('Saving...')
-      await new Promise((r) => setTimeout(r, 400))
-      setExportStep(null)
-    }
-  }, [markdown, customCss])
+    setExportTitleModal({ type: 'pdf' })
+  }, [])
 
   const handleExportDocx = useCallback(async () => {
-    await exportDocx(markdown, customCss)
-  }, [markdown, customCss])
+    setExportTitleModal({ type: 'docx' })
+  }, [])
 
   const handleExportHtml = useCallback(() => {
-    exportHtml(markdown, customCss)
+    setExportTitleModal({ type: 'html' })
+  }, [])
+
+  const doExport = useCallback(async (type: 'markdown' | 'pdf' | 'docx' | 'html', title: string) => {
+    setExportTitleModal(null)
+    if (type === 'markdown') {
+      exportMarkdown(markdown, undefined, title)
+      return
+    }
+    if (type === 'html') {
+      exportHtml(markdown, customCss, undefined, title)
+      return
+    }
+    if (type === 'docx') {
+      await exportDocx(markdown, customCss, undefined, title)
+      return
+    }
+    if (type === 'pdf') {
+      const isMobile = window.innerWidth <= 768
+      if (isMobile && mobileViewRef.current === 'editor') {
+        setMobileView('preview')
+        await new Promise((r) => requestAnimationFrame(r))
+        await new Promise((r) => setTimeout(r, 50))
+      }
+      setExportStep('Preparing document...')
+      await new Promise((r) => setTimeout(r, 300))
+      setExportStep('Rendering preview...')
+      await new Promise((r) => setTimeout(r, 300))
+      setExportStep('Generating PDF...')
+      try {
+        await exportPdf(markdown, customCss, undefined, title)
+      } finally {
+        setExportStep('Saving...')
+        await new Promise((r) => setTimeout(r, 400))
+        setExportStep(null)
+      }
+    }
   }, [markdown, customCss])
 
   // Keyboard shortcuts
@@ -126,6 +156,7 @@ export default function App() {
         onExportHtml={handleExportHtml}
         onAbout={() => setPage('about')}
         onHome={() => setPage('editor')}
+        onLoadDoc={handleLoadDoc}
       />
 
       {page === 'about' ? (
@@ -211,6 +242,19 @@ export default function App() {
           <span style={{ color: '#ffffff', fontSize: 16, fontWeight: 500 }}>{exportStep}</span>
         </div>
       )}
+
+      {/* Export title prompt */}
+      <PromptModal
+        open={exportTitleModal !== null}
+        title="Export Document"
+        label="File name:"
+        placeholder="document"
+        confirmLabel="Export"
+        onConfirm={(title) => {
+          if (exportTitleModal) doExport(exportTitleModal.type, title)
+        }}
+        onCancel={() => setExportTitleModal(null)}
+      />
 
       <Analytics />
     </div>
