@@ -89,16 +89,10 @@ export default function App() {
         await new Promise((r) => requestAnimationFrame(r))
         await new Promise((r) => setTimeout(r, 50))
       }
-      setExportStep('Preparing document...')
-      await new Promise((r) => setTimeout(r, 300))
-      setExportStep('Rendering preview...')
-      await new Promise((r) => setTimeout(r, 300))
-      setExportStep('Generating PDF...')
+      setExportStep('Opening print dialog...')
       try {
         await exportPdf(markdown, customCss, undefined, title)
       } finally {
-        setExportStep('Saving...')
-        await new Promise((r) => setTimeout(r, 400))
         setExportStep(null)
       }
     }
