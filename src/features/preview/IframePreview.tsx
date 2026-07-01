@@ -232,6 +232,19 @@ export function markdownToHtml(md: string): string {
   return renderToStaticMarkup(element)
 }
 
+/* ── Print-optimisation CSS that is appended to every preview ────── */
+const PRINT_CSS = `
+@media print {
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @page {
+    margin: 15mm;
+  }
+}
+`
+
 /* ── Public helper: build the full HTML document string ────────────── */
 export function buildPreviewHtml(markdown: string, customCss: string): string {
   const html = markdownToHtml(markdown)
@@ -241,6 +254,7 @@ export function buildPreviewHtml(markdown: string, customCss: string): string {
   <meta charset="UTF-8">
   <style>${BASE_MARKDOWN_STYLES}</style>
   ${customCss ? `<style>${customCss}</style>` : ''}
+  <style>${PRINT_CSS}</style>
 </head>
 <body>
   <div class="markdown-body">${html}</div>
@@ -266,6 +280,7 @@ export function IframePreview({ markdown, customCss }: IframePreviewProps) {
       srcDoc={srcDoc}
       style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
       sandbox="allow-same-origin"
+      data-print-target="preview"
     />
   )
 }

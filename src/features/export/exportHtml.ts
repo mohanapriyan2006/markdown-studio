@@ -1,7 +1,10 @@
 import { downloadBlob } from '../../lib/utils'
 import { buildPreviewHtml } from '../preview/IframePreview'
 
-export function exportHtml(markdown: string, customCss = '', filename = 'document.html') {
+export function exportHtml(markdown: string, customCss = '', filename = 'document.html', customTitle?: string) {
+  if (customTitle) {
+    filename = customTitle.replace(/[/\\?%*:|"<>]/g, '_') + '.html'
+  }
   if (!markdown.trim()) {
     alert('Nothing to export yet — write some Markdown first.')
     return

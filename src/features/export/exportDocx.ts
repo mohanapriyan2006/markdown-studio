@@ -248,7 +248,10 @@ function parseInlineRuns(text: string, linkColor = '6366f1', codeColor = '6366f1
   return runs.length ? runs : [new TextRun({ text })]
 }
 
-export async function exportDocx(markdown: string, customCss = '', filename = 'document.docx') {
+export async function exportDocx(markdown: string, customCss = '', filename = 'document.docx', customTitle?: string) {
+  if (customTitle) {
+    filename = customTitle.replace(/[/\\?%*:|"<>]/g, '_') + '.docx'
+  }
   const children = parseMarkdownToDocx(markdown, customCss)
 
   // Extract CSS-derived defaults

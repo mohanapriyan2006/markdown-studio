@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useMemo, useRef, useEffect } from 'react'
 import CodeMirror, { ReactCodeMirrorRef } from '@uiw/react-codemirror'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { css } from '@codemirror/lang-css'
@@ -37,14 +37,36 @@ export function EditorPanel() {
     markdown: mdContent,
     customCss,
     activeTab,
-    setMarkdown,
-    setCustomCss,
+    setMarkdown: rawSetMarkdown,
+    setCustomCss: rawSetCustomCss,
     setActiveTab,
     resetCss,
   } = useEditorStore()
 
   const isDark = useIsDark()
   const cmRef = useRef<ReactCodeMirrorRef>(null)
+
+  // Debounce store updates to avoid re-compiling the preview on every keystroke
+  const mdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const cssTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const setMarkdown = useCallback((val: string) => {
+    if (mdTimerRef.current) clearTimeout(mdTimerRef.current)
+    mdTimerRef.current = setTimeout(() => rawSetMarkdown(val), 150)
+  }, [rawSetMarkdown])
+
+  const setCustomCss = useCallback((val: string) => {
+    if (cssTimerRef.current) clearTimeout(cssTimerRef.current)
+    cssTimerRef.current = setTimeout(() => rawSetCustomCss(val), 150)
+  }, [rawSetCustomCss])
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (mdTimerRef.current) clearTimeout(mdTimerRef.current)
+      if (cssTimerRef.current) clearTimeout(cssTimerRef.current)
+    }
+  }, [])
 
   const wordCount = useMemo(() => countWords(mdContent), [mdContent])
   const charCount = useMemo(() => countChars(mdContent), [mdContent])

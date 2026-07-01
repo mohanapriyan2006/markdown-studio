@@ -4,7 +4,10 @@ import { FileUploader } from './FileUploader'
 import { ExportMenu } from './ExportMenu'
 import { ThemeToggle } from './ThemeToggle'
 import { TemplateSelector } from './TemplateSelector'
+import { SaveButton } from './SaveButton'
+import { SavedDocsManager } from './SavedDocsManager'
 import { useEditorStore } from '../stores/editorStore'
+import type { SavedDocument } from '../services/savedDocs'
 import logoImg from '../assets/logo.png'
 
 interface HeaderProps {
@@ -15,9 +18,10 @@ interface HeaderProps {
   onExportHtml: () => void
   onAbout: () => void
   onHome: () => void
+  onLoadDoc: (doc: SavedDocument) => void
 }
 
-export function Header({ onUpload, onExportMarkdown, onExportPdf, onExportDocx, onExportHtml, onAbout, onHome }: HeaderProps) {
+export function Header({ onUpload, onExportMarkdown, onExportPdf, onExportDocx, onExportHtml, onAbout, onHome, onLoadDoc }: HeaderProps) {
   const { lastSaved } = useEditorStore()
 
   return (
@@ -51,6 +55,11 @@ export function Header({ onUpload, onExportMarkdown, onExportPdf, onExportDocx, 
 
       {/* Actions */}
       <div className="header-actions">
+        <SaveButton />
+        <SavedDocsManager onLoad={onLoadDoc} />
+
+        <div className="header-divider" style={{ width: 1, height: 20, background: 'var(--border)', margin: '0 4px' }} />
+
         <TemplateSelector />
         <FileUploader onFileLoad={onUpload} />
 
