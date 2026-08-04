@@ -217,7 +217,7 @@ export function markdownToHtml(md: string): string {
                 type="checkbox"
                 checked={checked}
                 readOnly
-                style={{ marginRight: 6, accentColor: '#6366f1' }}
+                style={{ marginRight: 8, accentColor: '#7c3aed' }}
                 {...props}
               />
             )
@@ -242,6 +242,23 @@ const PRINT_CSS = `
   @page {
     margin: 15mm;
   }
+  .md-studio-footer {
+    display: block !important;
+  }
+}
+.md-studio-footer {
+  display: none;
+  margin-top: 48px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.md-studio-footer a {
+  color: #6366f1;
+  text-decoration: none;
 }
 `
 
@@ -258,6 +275,7 @@ export function buildPreviewHtml(markdown: string, customCss: string): string {
 </head>
 <body>
   <div class="markdown-body">${html}</div>
+  <div class="md-studio-footer">Made with <a href="https://markdownstudio-ai.vercel.app/">Markdown Studio</a></div>
 </body>
 </html>`
 }

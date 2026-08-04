@@ -254,6 +254,23 @@ export async function exportDocx(markdown: string, customCss = '', filename = 'd
   }
   const children = parseMarkdownToDocx(markdown, customCss)
 
+  // Footer: "Made with Markdown Studio" with link
+  children.push(new Paragraph({
+    children: [
+      new TextRun({ text: 'Made with ', size: 18, color: '94A3B8', italics: true }),
+      new TextRun({
+        text: 'Markdown Studio',
+        size: 18,
+        color: '6366F1',
+        italics: true,
+        style: 'Hyperlink',
+      }),
+    ],
+    spacing: { before: 400 },
+    border: { top: { color: 'E2E8F0', space: 8, style: BorderStyle.SINGLE, size: 6 } },
+    alignment: AlignmentType.CENTER,
+  }))
+
   // Extract CSS-derived defaults
   const bodyProps = extractCssProps(customCss, 'body')
   const h1Props = extractCssProps(customCss, 'h1')

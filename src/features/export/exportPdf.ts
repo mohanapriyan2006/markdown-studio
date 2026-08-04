@@ -48,7 +48,7 @@ export async function exportPdf(
   }
 </style>
 ${_customCss ? `<style>${scopeCss(_customCss, 'body')}</style>` : ''}
-</head><body>${placeholderHtml}</body></html>`,
+</head><body>${placeholderHtml}<div style="margin-top:48px;padding-top:16px;border-top:1px solid #e2e8f0;text-align:center;font-size:12px;color:#94a3b8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">Made with <a href="https://markdownstudio-ai.vercel.app/" style="color:#6366f1;text-decoration:none;">Markdown Studio</a></div></body></html>`,
       ],
       { type: 'text/html' }
     )
