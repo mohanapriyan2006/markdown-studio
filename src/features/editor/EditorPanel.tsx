@@ -22,10 +22,12 @@ import {
   Quote,
   Link,
   Image,
+  ImageUp,
   Minus,
 } from 'lucide-react'
 import { useEditorStore } from '../../stores/editorStore'
 import { countWords, countChars } from '../../lib/utils'
+import { addImage, canAddImage, MAX_IMAGE_SIZE_BYTES } from '../../lib/imageStore'
 import { AICopilot } from '../ai/AICopilot'
 
 function useIsDark() {
@@ -90,6 +92,87 @@ export function EditorPanel() {
       },
     })
   }, [])
+
+  const imageInputRef = useRef<HTMLInputElement>(null)
+
+  const compressImage = useCallback((file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = document.createElement('img')
+        img.onload = () => {
+          const MAX_WIDTH = 800
+          const MAX_HEIGHT = 600
+          let { width, height } = img
+
+          if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+            const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height)
+            width = Math.round(width * ratio)
+            height = Math.round(height * ratio)
+          }
+
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')
+          if (!ctx) {
+            reject(new Error('Could not get canvas context'))
+            return
+          }
+          ctx.drawImage(img, 0, 0, width, height)
+
+          const isPng = file.type === 'image/png'
+          const quality = isPng ? undefined : 0.8
+          const mime = isPng ? 'image/png' : 'image/jpeg'
+          const dataUrl = canvas.toDataURL(mime, quality)
+          resolve(dataUrl)
+        }
+        img.onerror = () => reject(new Error('Failed to load image'))
+        img.src = e.target?.result as string
+      }
+      reader.onerror = () => reject(new Error('Failed to read file'))
+      reader.readAsDataURL(file)
+    })
+  }, [])
+
+  const handleImageUpload = useCallback(async () => {
+    const input = imageInputRef.current
+    if (!input) return
+    input.click()
+  }, [])
+
+  const handleImageInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!canAddImage()) {
+      alert('You have reached the limit of 50 images.')
+      e.target.value = ''
+      return
+    }
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      alert('Image must be smaller than 5 MB.')
+      e.target.value = ''
+      return
+    }
+
+    try {
+      const dataUrl = await compressImage(file)
+      if (dataUrl.length > MAX_IMAGE_SIZE_BYTES) {
+        alert('Compressed image is still larger than 5 MB. Please use a smaller image.')
+        e.target.value = ''
+        return
+      }
+      const key = addImage(dataUrl)
+      const altText = file.name.replace(/\.[^.]+$/, '')
+      insertMarkdown(`![${altText}](img:${key})`)
+    } catch (err) {
+      console.error('Image upload failed:', err)
+    }
+
+    e.target.value = ''
+  }, [compressImage, insertMarkdown])
 
   const markdownExtensions = useMemo(
     () => [
@@ -273,6 +356,21 @@ export function EditorPanel() {
             >
               <Image size={14} />
             </button>
+            <button
+              className="toolbar-btn"
+              onClick={handleImageUpload}
+              title="Upload Image"
+              aria-label="Upload Image"
+            >
+              <ImageUp size={14} />
+            </button>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/gif,image/webp"
+              style={{ display: 'none' }}
+              onChange={handleImageInputChange}
+            />
             <button
               className="toolbar-btn"
               onClick={() => insertMarkdown('\n---\n')}

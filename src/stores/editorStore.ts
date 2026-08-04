@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { DEFAULT_MARKDOWN } from '../features/templates/templates'
+import { persistImages, restoreImages } from '../lib/imageStore'
+
+restoreImages()
 
 export type Theme = 'light' | 'dark' | 'system'
 export type ActiveTab = 'markdown' | 'css' | 'ai'
@@ -315,7 +318,7 @@ kbd {
 
 export const useEditorStore = create<EditorState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       markdown: DEFAULT_MARKDOWN,
       customCss: DEFAULT_CSS,
       activeTab: 'markdown',
@@ -328,7 +331,10 @@ export const useEditorStore = create<EditorState>()(
       setTheme: (theme) => set({ theme }),
       resetCss: () => set({ customCss: DEFAULT_CSS }),
       loadTemplate: (md) => set({ markdown: md, activeTab: 'markdown' }),
-      markSaved: () => set({ lastSaved: new Date() }),
+      markSaved: () => {
+        persistImages(get().markdown)
+        set({ lastSaved: new Date() })
+      },
     }),
     {
       name: 'markdown-studio-storage',
