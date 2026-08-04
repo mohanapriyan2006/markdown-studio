@@ -17,13 +17,11 @@ export function getImageCount(): number {
   return imageMap.size
 }
 
-export function canAddImage(): boolean {
-  return imageMap.size < MAX_IMAGES
-}
-
 export function addImage(dataUrl: string): string {
-  if (imageMap.size >= MAX_IMAGES) {
-    throw new Error(`Image limit reached (${MAX_IMAGES} images max)`)
+  while (imageMap.size >= MAX_IMAGES) {
+    const oldest = imageMap.keys().next().value
+    if (oldest === undefined) break
+    imageMap.delete(oldest)
   }
   let key = generateImageKey()
   while (imageMap.has(key)) {

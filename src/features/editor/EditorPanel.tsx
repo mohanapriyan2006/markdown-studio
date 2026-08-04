@@ -27,7 +27,7 @@ import {
 } from 'lucide-react'
 import { useEditorStore } from '../../stores/editorStore'
 import { countWords, countChars } from '../../lib/utils'
-import { addImage, canAddImage, MAX_IMAGE_SIZE_BYTES } from '../../lib/imageStore'
+import { addImage, MAX_IMAGE_SIZE_BYTES } from '../../lib/imageStore'
 import { AICopilot } from '../ai/AICopilot'
 
 function useIsDark() {
@@ -144,12 +144,6 @@ export function EditorPanel() {
   const handleImageInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-
-    if (!canAddImage()) {
-      alert('You have reached the limit of 50 images.')
-      e.target.value = ''
-      return
-    }
 
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
       alert('Image must be smaller than 5 MB.')
