@@ -13,6 +13,7 @@ import {
   HorizontalPositionAlign,
 } from 'docx'
 import { saveAs } from 'file-saver'
+import { resolveImageRefs } from '../../lib/imageStore'
 
 /* ── Minimal CSS parser for DOCX-relevant props ─────────────── */
 function extractCssProps(css: string, selector: string): Record<string, string> {
@@ -266,7 +267,7 @@ export async function exportDocx(markdown: string, customCss = '', filename = 'd
   if (customTitle) {
     filename = customTitle.replace(/[/\\?%*:|"<>]/g, '_') + '.docx'
   }
-  const children = parseMarkdownToDocx(markdown, customCss)
+  const children = parseMarkdownToDocx(resolveImageRefs(markdown), customCss)
 
   // Footer: "Made with Markdown Studio" with link
   children.push(new Paragraph({

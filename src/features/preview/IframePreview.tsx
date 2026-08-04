@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
 import rehypeRaw from 'rehype-raw'
+import { resolveImageRefs } from '../../lib/imageStore'
 
 /* ── Base markdown styles (baked-in, no CSS-variables) ─────────────── */
 export const BASE_MARKDOWN_STYLES = `
@@ -199,11 +200,25 @@ body {
 `
 
 /* ── Convert markdown string → HTML string (server render) ─────────── */
+const ALLOWED_PROTOCOLS = ['http:', 'https:', 'mailto:', 'tel:', 'data:']
+
+function allowDataUrl(url: string, _key: string, _node?: unknown): string | undefined {
+  try {
+    const parsed = new URL(url, 'http://localhost')
+    if (ALLOWED_PROTOCOLS.includes(parsed.protocol)) return url
+  } catch {
+    return url
+  }
+  return undefined
+}
+
 export function markdownToHtml(md: string): string {
+  const resolved = resolveImageRefs(md)
   const element = (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       rehypePlugins={[rehypeHighlight, rehypeRaw]}
+      urlTransform={allowDataUrl}
       components={{
         a: ({ children, href, ...props }) => (
           <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
@@ -226,7 +241,7 @@ export function markdownToHtml(md: string): string {
         },
       }}
     >
-      {md}
+      {resolved}
     </ReactMarkdown>
   )
   return renderToStaticMarkup(element)

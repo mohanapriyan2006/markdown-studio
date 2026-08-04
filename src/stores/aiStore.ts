@@ -1,7 +1,45 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import type { AIConfig, ChatMessage, ConnectionStatus, AIProvider } from '../types/ai'
 import { PROVIDER_PRESETS } from '../types/ai'
+
+const ENCODED_PREFIX = 'enc:'
+
+function encodeApiKey(key: string): string {
+  if (!key) return ''
+  try {
+    return ENCODED_PREFIX + btoa(key)
+  } catch {
+    return key
+  }
+}
+
+function decodeApiKey(encoded: string): string {
+  if (!encoded) return ''
+  if (encoded.startsWith(ENCODED_PREFIX)) {
+    try {
+      return atob(encoded.slice(ENCODED_PREFIX.length))
+    } catch {
+      return encoded
+    }
+  }
+  return encoded
+}
+
+const aiStorage = createJSONStorage<AIState>(() => localStorage, {
+  replacer: (key, value) => {
+    if (key === 'apiKey' && typeof value === 'string') {
+      return encodeApiKey(value)
+    }
+    return value
+  },
+  reviver: (key, value) => {
+    if (key === 'apiKey' && typeof value === 'string') {
+      return decodeApiKey(value)
+    }
+    return value
+  },
+})
 
 const DEFAULT_CONFIG: AIConfig = {
   provider: 'openai',
@@ -99,6 +137,7 @@ export const useAIStore = create<AIState>()(
     }),
     {
       name: 'markdown-studio-ai',
+      storage: aiStorage as any,
       partialize: (s) => ({
         config: s.config,
         isConfigured: s.isConfigured,
