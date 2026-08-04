@@ -279,7 +279,7 @@ export function IframePreview({ markdown, customCss }: IframePreviewProps) {
       title="Markdown Preview"
       srcDoc={srcDoc}
       style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-      sandbox="allow-same-origin"
+      sandbox="allow-same-origin allow-modals"
       data-print-target="preview"
     />
   )

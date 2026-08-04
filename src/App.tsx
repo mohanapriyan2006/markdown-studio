@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react'
-import { FileText, Eye, Loader2, Download } from 'lucide-react'
+import { FileText, Eye, Download } from 'lucide-react'
 import { Header } from './components/Header'
 import { EditorPanel } from './features/editor/EditorPanel'
 import { PreviewPanel } from './features/preview/PreviewPanel'
@@ -32,7 +32,6 @@ export default function App() {
   const { markdown, customCss, setMarkdown, setCustomCss } = useEditorStore()
   const [page, setPage] = useState<'editor' | 'about'>('editor')
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor')
-  const [exportStep, setExportStep] = useState<string | null>(null)
   const [exportTitleModal, setExportTitleModal] = useState<{
     type: 'markdown' | 'pdf' | 'docx' | 'html'
   } | null>(null)
@@ -79,7 +78,12 @@ export default function App() {
       return
     }
     if (type === 'docx') {
-      await exportDocx(markdown, customCss, undefined, title)
+      try {
+        await exportDocx(markdown, customCss, undefined, title)
+      } catch (err) {
+        console.error('DOCX export failed:', err)
+        alert('Failed to export DOCX. Please try again.')
+      }
       return
     }
     if (type === 'pdf') {
@@ -89,11 +93,11 @@ export default function App() {
         await new Promise((r) => requestAnimationFrame(r))
         await new Promise((r) => setTimeout(r, 50))
       }
-      setExportStep('Opening print dialog...')
       try {
         await exportPdf(markdown, customCss, undefined, title)
-      } finally {
-        setExportStep(null)
+      } catch (err) {
+        console.error('PDF export failed:', err)
+        alert('Failed to export PDF. Please try again.')
       }
     }
   }, [markdown, customCss])
@@ -218,25 +222,6 @@ export default function App() {
         </>
       )}
 
-      {/* Export loading overlay */}
-      {exportStep && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 9999,
-          background: 'rgba(15, 23, 42, 0.85)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 16,
-        }}>
-          <Loader2 size={40} style={{ color: '#ffffff', animation: 'spin 1s linear infinite' }} />
-          <span style={{ color: '#ffffff', fontSize: 16, fontWeight: 500 }}>{exportStep}</span>
-        </div>
-      )}
-
       {/* Export title prompt */}
       <PromptModal
         open={exportTitleModal !== null}
@@ -245,7 +230,7 @@ export default function App() {
         placeholder="document"
         confirmLabel="Export"
         onConfirm={(title) => {
-          if (exportTitleModal) doExport(exportTitleModal.type, title)
+          if (exportTitleModal) doExport(exportTitleModal.type, title).catch((err) => console.error('Export failed:', err))
         }}
         onCancel={() => setExportTitleModal(null)}
       />

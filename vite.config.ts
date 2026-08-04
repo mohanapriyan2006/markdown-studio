@@ -8,6 +8,6 @@ export default defineConfig({
     tailwindcss(),
   ],
   optimizeDeps: {
-    include: ['react', 'react-dom'],
+    include: ['react', 'react-dom', 'docx', 'file-saver', 'html2pdf.js'],
   },
 })
