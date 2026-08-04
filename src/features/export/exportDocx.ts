@@ -66,21 +66,6 @@ function cleanColor(color: string | undefined): string | undefined {
   return undefined
 }
 
-function wrapLine(line: string, maxLen: number): string[] {
-  if (line.length <= maxLen) return [line]
-  const chunks: string[] = []
-  let start = 0
-  while (start < line.length) {
-    chunks.push(line.slice(start, start + maxLen))
-    start += maxLen
-  }
-  return chunks
-}
-
-function wrapCodeBlock(lines: string[], maxLen = 100): string {
-  return lines.flatMap((line) => wrapLine(line, maxLen)).join('\n')
-}
-
 /* ── Simple markdown-to-DOCX converter ───────────────────────── */
 function parseMarkdownToDocx(markdown: string, customCss = '') {
   const aProps = extractCssProps(customCss, 'a')
@@ -193,13 +178,42 @@ function parseMarkdownToDocx(markdown: string, customCss = '') {
         i++
       }
       if (codeLines.length) {
-        const codeText = wrapCodeBlock(codeLines)
-        children.push(new Paragraph({
-          children: [new TextRun({ text: codeText, font: 'Courier New', size: 20, color: codeColor })],
-          shading: { fill: codeBg },
-          spacing: { after: 200, before: 200 },
-          indent: { left: 360, right: 360 },
+        // Render code block as a single-cell table with background + border
+        // Each line is a separate paragraph for proper alignment
+        const codeParagraphs = codeLines.map(codeLine =>
+          new Paragraph({
+            children: [new TextRun({
+              text: codeLine || ' ',
+              font: 'Consolas',
+              size: 18, // 9pt
+              color: '1E293B',
+            })],
+            spacing: { after: 0, before: 0, line: 260 },
+          })
+        )
+
+        children.push(new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: [
+            new TableRow({
+              children: [
+                new TableCell({
+                  children: codeParagraphs,
+                  shading: { fill: 'F8FAFC' },
+                  margins: { top: 120, bottom: 120, left: 200, right: 200 },
+                  borders: {
+                    top: { style: BorderStyle.SINGLE, size: 4, color: 'E2E8F0' },
+                    bottom: { style: BorderStyle.SINGLE, size: 4, color: 'E2E8F0' },
+                    left: { style: BorderStyle.SINGLE, size: 4, color: 'E2E8F0' },
+                    right: { style: BorderStyle.SINGLE, size: 4, color: 'E2E8F0' },
+                  },
+                }),
+              ],
+            }),
+          ],
         }))
+        // Add spacing after the code block table
+        children.push(new Paragraph({ spacing: { after: 160 } }))
       }
     }
     // Empty line
@@ -237,7 +251,7 @@ function parseInlineRuns(text: string, linkColor = '6366f1', codeColor = '6366f1
   while ((match = regex.exec(text)) !== null) {
     if (match[2]) runs.push(new TextRun({ text: match[2], bold: true }))
     else if (match[3]) runs.push(new TextRun({ text: match[3], italics: true }))
-    else if (match[4]) runs.push(new TextRun({ text: match[4], font: 'Courier New', size: 20, color: codeColor }))
+    else if (match[4]) runs.push(new TextRun({ text: match[4], font: 'Consolas', size: 20, color: 'BE185D', shading: { fill: 'F1F5F9' } }))
     else if (match[5]) runs.push(new TextRun({ text: match[5], strike: true }))
     else if (match[6]) {
       const linkMatch = match[6].match(/\[(.+?)\]\(.+?\)/)
